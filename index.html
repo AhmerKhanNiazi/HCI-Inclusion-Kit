@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="InclusionKit - Demonstrating HCI Topic 3 (Inclusive Design for Accessibility) and Topic 8 (Visual Haptic & Tactile Emulation). Built with HTML5, Tailwind CSS, and Vanilla JavaScript.">
+  <meta name="keywords" content="HCI, Accessibility, WCAG 2.1, Inclusive Design, Visual Haptics, Tactile Emulation, OpenDyslexic, Colorblindness">
+  <title>InclusionKit | Inclusive Design & Visual Haptic Emulation (HCI Topics 3 & 8)</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Core Accessibility & Visual Haptic Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+  <!-- ======================================================================
+       WCAG 2.4.1: Bypass Blocks (Skip to main content)
+       Crucial for screen-reader & keyboard-only users to bypass navigation
+       ====================================================================== -->
+  <a href="#main-content" class="skip-link">Skip to main content (Alt + S)</a>
+
+  <!-- ======================================================================
+       SVG Colorblindness Matrix Filters (Zero External Hardware)
+       Standard Machado/Brettel Cone Photopigment Defect Matrices
+       ====================================================================== -->
+  <svg class="sr-only" aria-hidden="true" width="0" height="0">
+    <defs>
+      <!-- Protanopia: L-cone (red) defect (~1% males) -->
+      <filter id="filter-protanopia">
+        <feColorMatrix type="matrix" values="
+          0.56667 0.43333 0.00000 0 0
+          0.55833 0.44167 0.00000 0 0
+          0.00000 0.24167 0.75833 0 0
+          0.00000 0.00000 0.00000 1 0" />
+      </filter>
+
+      <!-- Deuteranopia: M-cone (green) defect (~5% males, most common CVD) -->
+      <filter id="filter-deuteranopia">
+        <feColorMatrix type="matrix" values="
+          0.625 0.375 0.000 0 0
+          0.700 0.300 0.000 0 0
+          0.000 0.300 0.700 0 0
+          0.000 0.000 0.000 1 0" />
+      </filter>
+
+      <!-- Tritanopia: S-cone (blue) defect (<0.01% population) -->
+      <filter id="filter-tritanopia">
+        <feColorMatrix type="matrix" values="
+          0.950 0.050 0.000 0 0
+          0.000 0.433 0.567 0 0
+          0.000 0.475 0.525 0 0
+          0.000 0.000 0.000 1 0" />
+      </filter>
+
+      <!-- Achromatopsia / Monochromacy: Pure Luminance (WCAG 1.4.3 Test) -->
+      <filter id="filter-achromatopsia">
+        <feColorMatrix type="matrix" values="
+          0.299 0.587 0.114 0 0
+          0.299 0.587 0.114 0 0
+          0.299 0.587 0.114 0 0
+          0.000 0.000 0.000 1 0" />
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- ======================================================================
+       HEADER: Semantic Header with Academic Badges & Quick Tools
+       ====================================================================== -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 transition-colors shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between py-3">
+      
+      <!-- Brand & Topic Badges -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-700 flex items-center justify-center text-white font-black text-xl shadow-md shadow-sky-500/20">
+          IK
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-black text-slate-900 tracking-tight">InclusionKit</h1>
+            <span class="hidden sm:inline-flex items-center px-2 py-0.5 text-[10px] font-extrabold bg-sky-100 text-sky-800 rounded-full border border-sky-300">
+              WCAG 2.1 AA/AAA
+            </span>
+          </div>
+          <div class="flex items-center gap-2 text-xs text-slate-500 font-medium">
+            <span class="hover:text-sky-600 transition-colors">Topic 3: Inclusive Design</span>
+            <span>&bull;</span>
+            <span class="hover:text-sky-600 transition-colors">Topic 8: Visual Haptics</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Controls -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Live WCAG Inspector Toggle -->
+        <button type="button" 
+                class="btn-trigger-inspector inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-300 transition-all focus-visible:ring-2 focus-visible:ring-sky-500"
+                aria-pressed="false"
+                title="Toggle WCAG 2.1 Inspector Overlay (Alt + I)">
+          <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+          </svg>
+          <span class="hidden md:inline">WCAG Inspector</span>
+          <span class="md:hidden">Inspector</span>
+        </button>
+
+        <!-- Examiner Viva Guide Button -->
+        <button type="button" 
+                class="btn-open-viva inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-sky-500"
+                title="Open HCI Viva Cheat Sheet & Rubric (Alt + V)">
+          <span class="text-amber-400">🎓</span>
+          <span class="hidden sm:inline">Viva Cheat Sheet</span>
+          <span class="sm:hidden">Viva</span>
+        </button>
+
+        <!-- Cart Quick View (With Live Badge) -->
+        <button type="button" 
+                id="header-cart-btn"
+                class="relative p-2.5 text-slate-700 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-sky-500"
+                aria-label="View Shopping Cart">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+          <span id="cart-counter-badge" 
+                class="hidden absolute -top-1.5 -right-1.5 px-1.5 py-0.5 text-[10px] font-black bg-rose-600 text-white rounded-full min-w-[20px] text-center"
+                aria-live="polite">
+            0
+          </span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ======================================================================
+       MAIN CONTENT: Interactive Demo Workspace (E-Commerce Showcase)
+       ====================================================================== -->
+  <main id="main-content" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 focus:outline-none" tabindex="-1">
+    
+    <!-- Academic Project Banner -->
+    <section class="mb-8 p-6 bg-gradient-to-r from-sky-900 via-slate-900 to-indigo-950 text-white rounded-2xl shadow-xl border border-sky-800/40 relative overflow-hidden wcag-inspect-target"
+             data-wcag-criterion="1.4.3"
+             aria-labelledby="banner-heading">
+      <div class="relative z-10 max-w-3xl">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-400/30">
+            HCI Specialization Studio
+          </span>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+            Topic 3 & 8 Live Emulation
+          </span>
+        </div>
+        <h2 id="banner-heading" class="text-2xl sm:text-3xl font-black tracking-tight mb-2 text-white">
+          Accessible Adaptability Engine & Visual Tactile Sandbox
+        </h2>
+        <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-4">
+          Test real-time colorblindness transformation (Protanopia, Deuteranopia, Tritanopia, Monochromacy), Dyslexia typography adaptation, and screen-based tactile impulse emulation. Open the <strong class="text-sky-300 font-semibold">Adaptability Engine</strong> at bottom-right or press <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-xs font-mono">Alt + A</kbd>.
+        </p>
+        <div class="flex flex-wrap items-center gap-3 text-xs">
+          <div class="flex items-center gap-1.5 text-emerald-300">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            <span>WCAG 2.1 AA/AAA Compliant</span>
+          </div>
+          <div class="flex items-center gap-1.5 text-sky-300">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            <span>Zero External Hardware Required</span>
+          </div>
+          <div class="flex items-center gap-1.5 text-amber-300">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            <span>Cross-Modal Tactile Emulation</span>
+          </div>
+        </div>
+      </div>
+      <!-- Background subtle decorative pattern -->
+      <div class="absolute -right-12 -bottom-12 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    </section>
+
+    <!-- Interactive E-Commerce Product Showcase (2-Column Grid) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- LEFT COLUMN: Accessible Product Media Gallery & Swatches -->
+      <section class="lg:col-span-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm surface-card wcag-inspect-target"
+               data-wcag-criterion="1.4.1"
+               aria-label="Product Media Showcase">
+        
+        <!-- Main Product Image Frame -->
+        <div class="relative bg-slate-100 rounded-xl overflow-hidden aspect-square flex items-center justify-center border border-slate-200 mb-6 group">
+          <img id="main-product-image" 
+               src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80" 
+               alt="Sleek matte black adaptive headphones with memory foam cushions" 
+               class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+               loading="lazy">
+          
+          <!-- Tactile Visual Cue Overlay Badge (HCI Topic 8) -->
+          <div class="absolute top-4 left-4 bg-slate-900/85 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-md border border-slate-700">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Topic 8: Tactile Spring Active</span>
+          </div>
+
+          <!-- Colorblind Simulation Active Indicator -->
+          <div class="absolute bottom-4 right-4 bg-sky-950/85 backdrop-blur-md text-sky-200 text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-sky-600/40">
+            Multi-Modal Cues
+          </div>
+        </div>
+
+        <!-- WCAG 1.4.1: Color Swatch Selector (Never rely on color alone) -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <label id="swatch-group-label" class="text-sm font-bold text-slate-900">
+              Select Finish: 
+              <span id="selected-finish-label" class="font-normal text-sky-700">Cosmic Obsidian (● Circle)</span>
+            </label>
+            <span class="text-xs text-slate-500 font-medium">Geometric Non-Color Cues</span>
+          </div>
+
+          <!-- Accessible Radio Group with Keyboard Navigation (Arrow Keys) -->
+          <div role="radiogroup" 
+               aria-labelledby="swatch-group-label" 
+               class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            
+            <!-- Swatch 1: Obsidian (Circle) -->
+            <button type="button" 
+                    role="radio" 
+                    aria-checked="true" 
+                    tabindex="0"
+                    data-product-variant="obsidian"
+                    class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-300 hover:border-slate-400 bg-slate-50 transition-all ring-4 ring-sky-500 ring-offset-2 min-h-[54px] focus-visible:outline-none"
+                    aria-label="Cosmic Obsidian finish, identified by Circle shape">
+              <span class="w-6 h-6 rounded-full bg-slate-900 border border-slate-700 mb-1 flex items-center justify-center text-[10px] text-white">●</span>
+              <span class="text-xs font-semibold text-slate-800">Obsidian</span>
+              <span class="text-[10px] text-slate-500 font-mono">Circle</span>
+            </button>
+
+            <!-- Swatch 2: Chalk (Square) -->
+            <button type="button" 
+                    role="radio" 
+                    aria-checked="false" 
+                    tabindex="-1"
+                    data-product-variant="chalk"
+                    class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-300 hover:border-slate-400 bg-slate-50 transition-all min-h-[54px] focus-visible:outline-none"
+                    aria-label="Alpine Chalk finish, identified by Square shape">
+              <span class="w-6 h-6 rounded-md bg-white border border-slate-300 mb-1 flex items-center justify-center text-[10px] text-slate-800 shadow-sm">■</span>
+              <span class="text-xs font-semibold text-slate-800">Chalk</span>
+              <span class="text-[10px] text-slate-500 font-mono">Square</span>
+            </button>
+
+            <!-- Swatch 3: Coral (Triangle) -->
+            <button type="button" 
+                    role="radio" 
+                    aria-checked="false" 
+                    tabindex="-1"
+                    data-product-variant="coral"
+                    class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-300 hover:border-slate-400 bg-slate-50 transition-all min-h-[54px] focus-visible:outline-none"
+                    aria-label="Coral Sunrise finish, identified by Triangle shape">
+              <span class="w-6 h-6 rounded-full bg-orange-500 mb-1 flex items-center justify-center text-[10px] text-white font-bold">▲</span>
+              <span class="text-xs font-semibold text-slate-800">Coral</span>
+              <span class="text-[10px] text-slate-500 font-mono">Triangle</span>
+            </button>
+
+            <!-- Swatch 4: Azure (Diamond) -->
+            <button type="button" 
+                    role="radio" 
+                    aria-checked="false" 
+                    tabindex="-1"
+                    data-product-variant="azure"
+                    class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-300 hover:border-slate-400 bg-slate-50 transition-all min-h-[54px] focus-visible:outline-none"
+                    aria-label="Pacific Azure finish, identified by Diamond shape">
+              <span class="w-6 h-6 rounded-full bg-sky-600 mb-1 flex items-center justify-center text-[10px] text-white font-bold">◆</span>
+              <span class="text-xs font-semibold text-slate-800">Azure</span>
+              <span class="text-[10px] text-slate-500 font-mono">Diamond</span>
+            </button>
+
+          </div>
+        </div>
+
+      </section>
+
+      <!-- RIGHT COLUMN: Product Details, Quantity, & Checkout CTAs -->
+      <section class="lg:col-span-6 space-y-6">
+        
+        <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm surface-card space-y-6">
+          
+          <!-- Review Rating & Category (WCAG 1.1.1 Non-text Content) -->
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <span class="text-xs font-bold tracking-wider text-sky-700 uppercase bg-sky-50 px-2.5 py-1 rounded-md border border-sky-200">
+              Sensory Assistive Audio
+            </span>
+            <div class="flex items-center gap-1.5 text-xs text-slate-600" aria-label="Rated 4.9 out of 5 stars based on 1,280 customer reviews">
+              <div class="flex text-amber-400" aria-hidden="true">
+                ★★★★★
+              </div>
+              <span class="font-bold text-slate-900">4.9</span>
+              <span class="text-slate-400">/ 5.0</span>
+              <span class="text-slate-500">(1,280 reviews)</span>
+            </div>
+          </div>
+
+          <!-- Product Title & Tagline -->
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
+              AuraPulse Max &mdash; Adaptive Spatial Headphones
+            </h2>
+            <p class="text-slate-600 text-sm mt-1 leading-relaxed">
+              Engineered with integrated tactile vibration transducers, ultra-clear acoustic frequency separation, and high-contrast braille tactile controls.
+            </p>
+          </div>
+
+          <!-- Pricing & Contrast Indicator (WCAG 1.4.3 Level AA >= 4.5:1) -->
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between wcag-inspect-target"
+               data-wcag-criterion="1.4.3">
+            <div>
+              <span class="text-xs text-slate-500 block">Accessible Guaranteed Pricing</span>
+              <div class="flex items-baseline gap-2">
+                <span class="text-3xl font-black text-slate-900">$219.00</span>
+                <span class="text-sm text-slate-500 line-through">
+                  <span class="sr-only">Original price: </span>$299.00
+                </span>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-black rounded-lg border border-emerald-300">
+              Save $80 (27% OFF)
+            </span>
+          </div>
+
+          <!-- Quantity Stepper with Boundary Recoil (Topic 8: Tactile Emulation) -->
+          <div class="space-y-2 wcag-inspect-target" data-wcag-criterion="2.5.5">
+            <label for="product-qty-input" class="block text-sm font-bold text-slate-900">
+              Quantity <span class="text-xs font-normal text-slate-500">(Max 5 per customer &bull; Tactile Recoil Bounds)</span>
+            </label>
+            <div class="flex items-center gap-3">
+              <div class="inline-flex items-center rounded-xl border border-slate-300 bg-slate-50 p-1">
+                <!-- Decrement Button (Minimum 44x44px target WCAG 2.5.5) -->
+                <button type="button" 
+                        id="btn-qty-decrease" 
+                        class="w-11 h-11 flex items-center justify-center rounded-lg bg-white text-slate-700 hover:bg-slate-100 shadow-sm border border-slate-200 font-black text-lg focus-visible:ring-2 focus-visible:ring-sky-500"
+                        aria-label="Decrease quantity">
+                  &minus;
+                </button>
+                <input type="number" 
+                       id="product-qty-input" 
+                       value="1" 
+                       min="1" 
+                       max="5"
+                       aria-valuenow="1"
+                       aria-valuemin="1"
+                       aria-valuemax="5"
+                       class="w-14 text-center bg-transparent font-bold text-slate-900 focus:outline-none"
+                       aria-label="Selected quantity">
+                <!-- Increment Button -->
+                <button type="button" 
+                        id="btn-qty-increase" 
+                        class="w-11 h-11 flex items-center justify-center rounded-lg bg-white text-slate-700 hover:bg-slate-100 shadow-sm border border-slate-200 font-black text-lg focus-visible:ring-2 focus-visible:ring-sky-500"
+                        aria-label="Increase quantity">
+                  &#43;
+                </button>
+              </div>
+              <span class="text-xs text-slate-500 font-medium">In stock &bull; Dispatches within 24h</span>
+            </div>
+          </div>
+
+          <!-- Primary Interactive Actions (Visual Haptic Micro-Interactions) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <!-- Add to Cart Button -->
+            <button type="button" 
+                    id="btn-add-to-cart" 
+                    class="w-full min-h-[50px] px-6 py-3.5 rounded-xl font-bold text-slate-900 bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-sky-500 wcag-inspect-target"
+                    data-wcag-criterion="topic-8">
+              <svg class="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+              </svg>
+              <span>Add to Cart</span>
+            </button>
+
+            <!-- Buy Now / Express Checkout (Triggers accessible dialog) -->
+            <button type="button" 
+                    id="btn-buy-now" 
+                    class="w-full min-h-[50px] px-6 py-3.5 rounded-xl font-extrabold text-white bg-sky-600 hover:bg-sky-700 shadow-lg shadow-sky-600/30 transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-sky-500 wcag-inspect-target"
+                    data-wcag-criterion="2.1.1">
+              <span>Checkout Now</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Accessibility Guarantees Row -->
+          <div class="border-t border-slate-200 pt-4 grid grid-cols-3 gap-2 text-center text-xs text-slate-600">
+            <div class="p-2 rounded-lg bg-slate-50">
+              <span class="block font-bold text-slate-900">44px+</span>
+              <span>Touch Targets</span>
+            </div>
+            <div class="p-2 rounded-lg bg-slate-50">
+              <span class="block font-bold text-slate-900">7:1 AAA</span>
+              <span>High Contrast</span>
+            </div>
+            <div class="p-2 rounded-lg bg-slate-50">
+              <span class="block font-bold text-slate-900">Haptic</span>
+              <span>Tactile Emulated</span>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- WAI-ARIA Accessible Tabbed Specifications Panel (WCAG 2.1.1) -->
+    <section class="mt-10 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden surface-card wcag-inspect-target"
+             data-wcag-criterion="2.1.1"
+             aria-label="Detailed Specifications and Reviews">
+      
+      <!-- Tablist Header -->
+      <div role="tablist" aria-label="Product Information Tabs" class="flex border-b border-slate-200 bg-slate-50 px-4 pt-2 gap-2 overflow-x-auto">
+        <button type="button" 
+                role="tab" 
+                aria-selected="true" 
+                aria-controls="panel-specs" 
+                id="tab-specs" 
+                tabindex="0"
+                class="px-5 py-3 text-sm font-bold border-b-2 border-sky-600 text-sky-600 transition-colors focus-visible:ring-2 focus-visible:ring-sky-500 whitespace-nowrap">
+          Acoustic & Hardware Specs
+        </button>
+        <button type="button" 
+                role="tab" 
+                aria-selected="false" 
+                aria-controls="panel-accessibility" 
+                id="tab-accessibility" 
+                tabindex="-1"
+                class="px-5 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-sky-500 whitespace-nowrap">
+          Inclusive HCI Features
+        </button>
+        <button type="button" 
+                role="tab" 
+                aria-selected="false" 
+                aria-controls="panel-reviews" 
+                id="tab-reviews" 
+                tabindex="-1"
+                class="px-5 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-sky-500 whitespace-nowrap">
+          User Reviews (1,280)
+        </button>
+      </div>
+
+      <!-- Tabpanel 1: Specs -->
+      <div role="tabpanel" id="panel-specs" aria-labelledby="tab-specs" tabindex="0" class="p-6 sm:p-8 space-y-4 focus:outline-none">
+        <h3 class="text-lg font-bold text-slate-900">Technical Specifications</h3>
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div class="p-3 bg-slate-50 rounded-lg">
+            <dt class="font-bold text-slate-500 text-xs uppercase">Transducer Frequency</dt>
+            <dd class="font-semibold text-slate-900 mt-0.5">5 Hz &ndash; 42,000 Hz (Full Spectrum Audio)</dd>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-lg">
+            <dt class="font-bold text-slate-500 text-xs uppercase">Tactile Actuator Type</dt>
+            <dd class="font-semibold text-slate-900 mt-0.5">Dual-Axis LRA (Linear Resonant Actuator)</dd>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-lg">
+            <dt class="font-bold text-slate-500 text-xs uppercase">Battery Playback</dt>
+            <dd class="font-semibold text-slate-900 mt-0.5">48 Hours with Active Noise Cancellation</dd>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-lg">
+            <dt class="font-bold text-slate-500 text-xs uppercase">Charging Standard</dt>
+            <dd class="font-semibold text-slate-900 mt-0.5">USB-C Fast Charging (15 min gives 6 hours)</dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Tabpanel 2: Accessibility Features -->
+      <div role="tabpanel" id="panel-accessibility" aria-labelledby="tab-accessibility" tabindex="-1" class="p-6 sm:p-8 space-y-4 hidden focus:outline-none">
+        <h3 class="text-lg font-bold text-slate-900">HCI Accessibility & Inclusive Design Notes</h3>
+        <div class="space-y-3 text-sm text-slate-700 leading-relaxed">
+          <div class="p-4 bg-sky-50 rounded-xl border border-sky-200">
+            <h4 class="font-bold text-sky-950 flex items-center gap-1.5 mb-1">
+              <span>●</span> Braille Physical Orientation Marks
+            </h4>
+            <p class="text-sky-900">The left and right earcups feature distinct raised tactile geometry, allowing users with visual impairments to orient the headphones effortlessly in total darkness.</p>
+          </div>
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <h4 class="font-bold text-slate-900 flex items-center gap-1.5 mb-1">
+              <span>●</span> Bone Conduction Assist Mode
+            </h4>
+            <p class="text-slate-600">Secondary bone-vibration transducers bypass outer ear obstructions, providing direct acoustic stimulation for users with conductive hearing loss.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabpanel 3: Customer Reviews -->
+      <div role="tabpanel" id="panel-reviews" aria-labelledby="tab-reviews" tabindex="-1" class="p-6 sm:p-8 space-y-4 hidden focus:outline-none">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold text-slate-900">Verified Assistive Tech Reviews</h3>
+          <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded">100% Authentic Feedback</span>
+        </div>
+        <div class="divide-y divide-slate-200">
+          <article class="py-4 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-slate-900 text-sm">Dr. Farhan K. (HCI Researcher)</span>
+              <span class="text-xs text-slate-500">2 days ago</span>
+            </div>
+            <div class="text-amber-400 text-xs" aria-label="5 stars">★★★★★</div>
+            <p class="text-slate-600 text-sm leading-relaxed">The tactile haptic response emulates mechanical buttons so well on screen. Testing with Protanopia filters proves the importance of shape indicators!</p>
+          </article>
+          <article class="py-4 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-slate-900 text-sm">Ayesha M. (UI/UX Designer)</span>
+              <span class="text-xs text-slate-500">1 week ago</span>
+            </div>
+            <div class="text-amber-400 text-xs" aria-label="5 stars">★★★★★</div>
+            <p class="text-slate-600 text-sm leading-relaxed">Switching to OpenDyslexic font and wide letter-spacing makes long-form text effortless to parse. Fantastic demonstration of WCAG 1.4.12.</p>
+          </article>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ======================================================================
+       FLOATING ACCESSIBILITY DOCK (THE ADAPTABILITY ENGINE)
+       Collapsible Bottom-Right Widget with Full Multi-Tab Controls
+       ====================================================================== -->
+  <!-- Floating Action Button (FAB) -->
+  <aside aria-label="Accessibility Engine Controls">
+    <button type="button" 
+            id="btn-toggle-dock" 
+            class="fixed bottom-6 right-6 z-50 p-4 bg-sky-600 hover:bg-sky-700 text-white rounded-full shadow-2xl shadow-sky-600/50 flex items-center justify-center transition-all hover:scale-105 active:scale-95 focus-visible:ring-4 focus-visible:ring-sky-400 group"
+            aria-expanded="false" 
+            aria-controls="accessibility-dock"
+            aria-label="Toggle Accessibility Adaptability Engine (Alt + A)">
+      
+      <!-- Accessibility Icon -->
+      <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="4.5" r="2.5"></circle>
+        <path d="M4 8.5h16M12 8.5v7m-3.5 5.5l3.5-5.5 3.5 5.5"></path>
+      </svg>
+      
+      <!-- Active Settings Badge Counter -->
+      <span id="dock-active-count" 
+            class="hidden absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-400 text-slate-950 font-black text-xs items-center justify-center border-2 border-white shadow-md">
+        0
+      </span>
+      
+      <!-- Screen Reader Tooltip Text -->
+      <span class="sr-only">Open Accessibility Toolbar</span>
+    </button>
+
+    <!-- Slide-in Drawer Container -->
+    <div id="accessibility-dock" 
+         class="fixed bottom-22 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden translate-x-full opacity-0 pointer-events-none transition-all duration-300 flex flex-col max-h-[82vh]"
+         role="region" 
+         aria-label="InclusionKit Adaptability Engine">
+      
+      <!-- Dock Header -->
+      <div class="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center text-white font-bold text-sm">
+            ⚙
+          </div>
+          <div>
+            <h3 class="font-extrabold text-sm tracking-tight text-white">Adaptability Engine</h3>
+            <p class="text-[11px] text-sky-300">Live HCI Adaptation Control</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" 
+                  class="btn-reset-inclusionkit text-[11px] font-bold px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700"
+                  title="Reset all settings to default (Alt + R)">
+            Reset
+          </button>
+          <button type="button" 
+                  id="btn-close-dock" 
+                  class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 focus-visible:ring-2 focus-visible:ring-sky-400"
+                  aria-label="Close Accessibility Engine Panel">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Dock Segmented Tabs -->
+      <div class="flex border-b border-slate-200 bg-slate-50 text-xs font-bold" role="tablist">
+        <button type="button" data-dock-tab="vision" role="tab" aria-selected="true" class="flex-1 py-2.5 text-center border-b-2 border-sky-600 text-sky-600 transition-colors">
+          🎨 Vision
+        </button>
+        <button type="button" data-dock-tab="typography" role="tab" aria-selected="false" class="flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-colors">
+          🔤 Type
+        </button>
+        <button type="button" data-dock-tab="haptics" role="tab" aria-selected="false" class="flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-colors">
+          📳 Haptic
+        </button>
+        <button type="button" data-dock-tab="viva" role="tab" aria-selected="false" class="flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-colors">
+          🎓 Viva
+        </button>
+      </div>
+
+      <!-- Scrollable Tab Content Container -->
+      <div class="p-5 overflow-y-auto space-y-6 dock-scroll flex-1 text-slate-800">
+        
+        <!-- SECTION 1: VISION & COLOR -->
+        <div data-dock-section="vision" class="space-y-5">
+          
+          <!-- Colorblindness Matrix Filter Selector -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-bold text-slate-900 uppercase tracking-wider">Colorblindness Simulation</label>
+              <span class="text-[10px] text-sky-600 font-semibold">SVG Matrices</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <button type="button" data-color-filter="none" aria-pressed="true" class="p-2.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-left ring-2 ring-sky-500 bg-sky-50 text-sky-700 font-bold">
+                <span class="block">Normal</span>
+                <span class="text-[10px] text-slate-500 font-normal">Full Trichromacy</span>
+              </button>
+              <button type="button" data-color-filter="protanopia" aria-pressed="false" class="p-2.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-left">
+                <span class="block font-semibold">Protanopia</span>
+                <span class="text-[10px] text-slate-500">Red-Blind (L-cone)</span>
+              </button>
+              <button type="button" data-color-filter="deuteranopia" aria-pressed="false" class="p-2.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-left">
+                <span class="block font-semibold">Deuteranopia</span>
+                <span class="text-[10px] text-slate-500">Green-Blind (M-cone)</span>
+              </button>
+              <button type="button" data-color-filter="tritanopia" aria-pressed="false" class="p-2.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-left">
+                <span class="block font-semibold">Tritanopia</span>
+                <span class="text-[10px] text-slate-500">Blue-Blind (S-cone)</span>
+              </button>
+              <button type="button" data-color-filter="grayscale" aria-pressed="false" class="col-span-2 p-2.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-left">
+                <span class="block font-semibold">Achromatopsia (Grayscale)</span>
+                <span class="text-[10px] text-slate-500">Complete absence of color (pure luminance test)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Contrast Modes (WCAG 1.4.3 & 1.4.6) -->
+          <div>
+            <label class="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">Contrast Enhancement</label>
+            <div class="grid grid-cols-3 gap-2 text-xs">
+              <button type="button" data-contrast-mode="normal" aria-pressed="true" class="p-2 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-center ring-2 ring-sky-500 bg-sky-50 text-sky-700 font-bold">
+                Standard
+              </button>
+              <button type="button" data-contrast-mode="high" aria-pressed="false" class="p-2 rounded-lg border border-slate-300 bg-slate-900 text-yellow-400 hover:bg-black text-center font-bold">
+                High (AAA)
+              </button>
+              <button type="button" data-contrast-mode="inverted" aria-pressed="false" class="p-2 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-center font-semibold">
+                Inverted
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- SECTION 2: TYPOGRAPHY & READING -->
+        <div data-dock-section="typography" class="space-y-5 hidden">
+          
+          <!-- Font Family Switcher -->
+          <div>
+            <label class="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">Specialized Typography</label>
+            <div class="space-y-1.5 text-xs">
+              <button type="button" data-font-family="default" aria-pressed="true" class="w-full p-2.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-left ring-2 ring-sky-500 bg-sky-50 text-sky-700 font-bold">
+                <span class="block font-semibold">Standard UI (Inter)</span>
+                <span class="text-[10px] text-slate-500">Modern clean geometric sans</span>
+              </button>
+              <button type="button" data-font-family="dyslexic" aria-pressed="false" class="w-full p-2.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-left font-['OpenDyslexic']">
+                <span class="block font-semibold">OpenDyslexic</span>
+                <span class="text-[10px] text-slate-500 font-sans">Weighted bottoms prevent letter inversion</span>
+              </button>
+              <button type="button" data-font-family="hyperlegible" aria-pressed="false" class="w-full p-2.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-left">
+                <span class="block font-semibold">Atkinson Hyperlegible</span>
+                <span class="text-[10px] text-slate-500">Braille Institute low-vision design</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Dynamic Text Scaling (WCAG 1.4.4 Resize Text) -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-bold text-slate-900 uppercase tracking-wider">Text Zoom Scale</label>
+              <span class="text-[10px] text-slate-500">WCAG 1.4.4 (Up to 200%)</span>
+            </div>
+            <div class="grid grid-cols-4 gap-2 text-xs">
+              <button type="button" data-font-scale="1" aria-pressed="true" class="p-2 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-center ring-2 ring-sky-500 bg-sky-50 text-sky-700 font-bold">
+                100%
+              </button>
+              <button type="button" data-font-scale="1.25" aria-pressed="false" class="p-2 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-center font-semibold">
+                125%
+              </button>
+              <button type="button" data-font-scale="1.5" aria-pressed="false" class="p-2 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-center font-semibold">
+                150%
+              </button>
+              <button type="button" data-font-scale="2" aria-pressed="false" class="p-2 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-center font-semibold">
+                200%
+              </button>
+            </div>
+          </div>
+
+          <!-- Letter Spacing (WCAG 1.4.12) -->
+          <div>
+            <label class="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">Letter Spacing (WCAG 1.4.12)</label>
+            <div class="grid grid-cols-3 gap-2 text-xs">
+              <button type="button" data-letter-spacing="normal" aria-pressed="true" class="p-2 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-center ring-2 ring-sky-500 bg-sky-50 text-sky-700 font-bold">
+                Normal
+              </button>
+              <button type="button" data-letter-spacing="wide" aria-pressed="false" class="p-2 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-center font-semibold">
+                Wide (+0.08em)
+              </button>
+              <button type="button" data-letter-spacing="extra" aria-pressed="false" class="p-2 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-center font-semibold">
+                Extra (+0.15em)
+              </button>
+            </div>
+          </div>
+
+          <!-- Reading Ruler & Reduced Motion Toggles -->
+          <div class="space-y-3 pt-2 border-t border-slate-200">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="block text-xs font-bold text-slate-900">Reading Guide Ruler</span>
+                <span class="text-[10px] text-slate-500">Follows cursor to isolate active line</span>
+              </div>
+              <button type="button" id="toggle-reading-ruler" role="switch" aria-checked="false" class="w-11 h-6 bg-slate-300 rounded-full p-1 transition-colors focus-visible:ring-2 focus-visible:ring-sky-500">
+                <span class="toggle-indicator block w-4 h-4 bg-white rounded-full shadow transition-transform"></span>
+              </button>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="block text-xs font-bold text-slate-900">Reduced Motion Mode</span>
+                <span class="text-[10px] text-slate-500">WCAG 2.3.3 (Suppress animation)</span>
+              </div>
+              <button type="button" id="toggle-reduced-motion" role="switch" aria-checked="false" class="w-11 h-6 bg-slate-300 rounded-full p-1 transition-colors focus-visible:ring-2 focus-visible:ring-sky-500">
+                <span class="toggle-indicator block w-4 h-4 bg-white rounded-full shadow transition-transform"></span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- SECTION 3: VISUAL HAPTICS & FOCUS (TOPIC 8) -->
+        <div data-dock-section="haptics" class="space-y-5 hidden">
+          
+          <!-- Visual Haptic Feedback Switches -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="block text-xs font-bold text-slate-900">Visual Haptic Feedback</span>
+                <span class="text-[10px] text-slate-500">Micro-spring compression & ripples</span>
+              </div>
+              <button type="button" id="toggle-visual-haptics" role="switch" aria-checked="true" class="w-11 h-6 bg-sky-600 rounded-full p-1 transition-colors focus-visible:ring-2 focus-visible:ring-sky-500">
+                <span class="toggle-indicator block w-4 h-4 bg-white rounded-full shadow transition-transform translate-x-5"></span>
+              </button>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="block text-xs font-bold text-slate-900">Synthetic Micro-Tick</span>
+                <span class="text-[10px] text-slate-500">Dual-channel software audio click</span>
+              </div>
+              <button type="button" id="toggle-haptic-sound" role="switch" aria-checked="true" class="w-11 h-6 bg-sky-600 rounded-full p-1 transition-colors focus-visible:ring-2 focus-visible:ring-sky-500">
+                <span class="toggle-indicator block w-4 h-4 bg-white rounded-full shadow transition-transform translate-x-5"></span>
+              </button>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="block text-xs font-bold text-slate-900">Pulsing Focus Ring</span>
+                <span class="text-[10px] text-slate-500">WCAG 2.4.11 Focus Appearance</span>
+              </div>
+              <button type="button" id="toggle-enhanced-focus" role="switch" aria-checked="true" class="w-11 h-6 bg-sky-600 rounded-full p-1 transition-colors focus-visible:ring-2 focus-visible:ring-sky-500">
+                <span class="toggle-indicator block w-4 h-4 bg-white rounded-full shadow transition-transform translate-x-5"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Focus Ring Theme Selection -->
+          <div class="pt-2 border-t border-slate-200">
+            <label class="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">High-Visibility Focus Theme</label>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <button type="button" data-focus-theme="vibrant-blue" aria-pressed="true" class="p-2 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 flex items-center gap-2 ring-2 ring-sky-500 bg-sky-50 text-sky-700 font-bold">
+                <span class="w-3.5 h-3.5 rounded-full bg-sky-600 border border-slate-400"></span>
+                <span>Vibrant Blue</span>
+              </button>
+              <button type="button" data-focus-theme="high-contrast-yellow" aria-pressed="false" class="p-2 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-slate-400"></span>
+                <span>High-Vis Yellow</span>
+              </button>
+              <button type="button" data-focus-theme="cyber-magenta" aria-pressed="false" class="p-2 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-full bg-pink-500 border border-slate-400"></span>
+                <span>Cyber Magenta</span>
+              </button>
+              <button type="button" data-focus-theme="pure-white" aria-pressed="false" class="p-2 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-full bg-white border border-slate-400"></span>
+                <span>Stark White</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- SECTION 4: VIVA & WCAG INSPECTOR -->
+        <div data-dock-section="viva" class="space-y-5 hidden">
+          
+          <!-- Quick Toggle WCAG Inspector -->
+          <div class="p-4 bg-sky-50 rounded-xl border border-sky-200 space-y-3">
+            <div>
+              <h4 class="font-bold text-xs text-sky-950 uppercase tracking-wider">Live Examiner Inspector</h4>
+              <p class="text-xs text-sky-900 mt-0.5">Highlights all interactive UI elements and shows exact WCAG criteria on hover.</p>
+            </div>
+            <button type="button" id="toggle-wcag-inspector" class="w-full py-2.5 px-4 rounded-lg bg-sky-600 text-white font-bold text-xs hover:bg-sky-700 transition-colors shadow-sm flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              <span>Toggle Inspector Mode (Alt + I)</span>
+            </button>
+          </div>
+
+          <!-- Open Viva Guide Button -->
+          <div class="p-4 bg-slate-900 text-white rounded-xl space-y-2">
+            <h4 class="font-bold text-xs text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+              <span>🎓</span> HCI Viva Defense Rubric
+            </h4>
+            <p class="text-xs text-slate-300">Complete theoretical cheat sheet covering Topic 3 & Topic 8 with formulas and examiner questions.</p>
+            <button type="button" class="btn-open-viva w-full py-2 px-3 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs rounded-lg transition-colors mt-1">
+              Open Full Viva Cheat Sheet (Alt + V)
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Dock Keyboard Legend Footer -->
+      <div class="p-3 bg-slate-100 border-t border-slate-200 text-[11px] text-slate-600 flex items-center justify-between">
+        <span>Shortcuts:</span>
+        <div class="flex gap-2">
+          <span><kbd class="px-1 py-0.5 bg-white border border-slate-300 rounded font-mono">Alt+A</kbd> Dock</span>
+          <span><kbd class="px-1 py-0.5 bg-white border border-slate-300 rounded font-mono">Alt+I</kbd> Inspect</span>
+          <span><kbd class="px-1 py-0.5 bg-white border border-slate-300 rounded font-mono">Alt+R</kbd> Reset</span>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ======================================================================
+       ACCESSIBLE CHECKOUT MODAL DIALOG (WCAG 2.1.2 & 3.3.1 Error Handling)
+       ====================================================================== -->
+  <div id="checkout-modal" 
+       class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm hidden flex items-center justify-center p-4"
+       role="dialog" 
+       aria-modal="true" 
+       aria-labelledby="checkout-modal-title"
+       aria-hidden="true">
+    
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative max-h-[90vh] overflow-y-auto">
+      
+      <!-- Close Button -->
+      <button type="button" 
+              id="btn-close-checkout" 
+              class="absolute top-5 right-5 p-2 text-slate-400 hover:text-slate-800 rounded-lg hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-sky-500"
+              aria-label="Close Checkout Dialog">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <!-- Active Checkout Form -->
+      <div id="accessible-checkout-form-container">
+        
+        <div class="mb-6">
+          <span class="text-xs font-bold text-sky-700 uppercase tracking-wider bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
+            Accessible Checkout
+          </span>
+          <h3 id="checkout-modal-title" class="text-2xl font-black text-slate-900 mt-1">Complete Order</h3>
+          <p class="text-xs text-slate-500">WCAG 3.3.1 Error Identification & Real-Time Validation</p>
+        </div>
+
+        <form id="accessible-checkout-form" class="space-y-4" novalidate>
+          
+          <!-- Full Name -->
+          <div>
+            <label for="checkout-name" class="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-1">
+              Full Name <span class="text-rose-600" aria-hidden="true">*</span>
+            </label>
+            <input type="text" 
+                   id="checkout-name" 
+                   name="name" 
+                   required 
+                   autocomplete="name"
+                   class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm font-medium text-slate-900 focus:outline-none transition-colors"
+                   placeholder="e.g. Alex Mercer"
+                   aria-describedby="name-error-msg">
+            <p id="name-error-msg" class="hidden text-xs text-rose-600 font-semibold mt-1" role="alert"></p>
+          </div>
+
+          <!-- Email Address -->
+          <div>
+            <label for="checkout-email" class="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-1">
+              Email Address <span class="text-rose-600" aria-hidden="true">*</span>
+            </label>
+            <input type="email" 
+                   id="checkout-email" 
+                   name="email" 
+                   required 
+                   autocomplete="email"
+                   class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm font-medium text-slate-900 focus:outline-none transition-colors"
+                   placeholder="alex@example.com"
+                   aria-describedby="email-error-msg">
+            <p id="email-error-msg" class="hidden text-xs text-rose-600 font-semibold mt-1" role="alert"></p>
+          </div>
+
+          <!-- Shipping Address -->
+          <div>
+            <label for="checkout-address" class="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-1">
+              Shipping Address <span class="text-rose-600" aria-hidden="true">*</span>
+            </label>
+            <input type="text" 
+                   id="checkout-address" 
+                   name="address" 
+                   required 
+                   autocomplete="street-address"
+                   class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm font-medium text-slate-900 focus:outline-none transition-colors"
+                   placeholder="Street address, City, Postal Code"
+                   aria-describedby="address-error-msg">
+            <p id="address-error-msg" class="hidden text-xs text-rose-600 font-semibold mt-1" role="alert"></p>
+          </div>
+
+          <!-- Payment Mock Method -->
+          <fieldset class="pt-2">
+            <legend class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">Payment Method</legend>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <label class="flex items-center gap-2 p-3 rounded-lg border border-sky-400 bg-sky-50 cursor-pointer font-bold text-sky-900">
+                <input type="radio" name="payment" value="card" checked class="text-sky-600">
+                <span>Credit / Debit Card</span>
+              </label>
+              <label class="flex items-center gap-2 p-3 rounded-lg border border-slate-300 bg-slate-50 cursor-pointer font-semibold text-slate-700">
+                <input type="radio" name="payment" value="cod" class="text-sky-600">
+                <span>Cash on Delivery</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <!-- Order Summary Line -->
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center text-sm">
+            <span class="font-semibold text-slate-600">Total with Express Shipping:</span>
+            <span class="font-black text-slate-900 text-base">$219.00</span>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" 
+                  id="btn-submit-order" 
+                  class="w-full py-3.5 px-6 rounded-xl font-black text-white bg-sky-600 hover:bg-sky-700 shadow-lg shadow-sky-600/30 transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-sky-500">
+            <span>Confirm & Place Order</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          </button>
+
+        </form>
+
+        <!-- Order Success View (Replaces form upon valid submission) -->
+        <div id="checkout-success-view" class="hidden text-center py-6 space-y-4">
+          <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-3xl font-black border-2 border-emerald-400 animate-bounce">
+            ✓
+          </div>
+          <div>
+            <h4 class="text-2xl font-black text-slate-900">Order Confirmed!</h4>
+            <p class="text-sm text-slate-600 mt-1 max-w-sm mx-auto">
+              Order #IK-98241 placed successfully. An accessible confirmation email has been dispatched.
+            </p>
+          </div>
+          <button type="button" 
+                  onclick="document.getElementById('btn-close-checkout').click()" 
+                  class="px-6 py-2.5 rounded-lg bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 transition-colors">
+            Return to Store
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       HCI VIVA DEFENSE CHEAT SHEET MODAL (Examiner Quick Rubric)
+       ====================================================================== -->
+  <div id="viva-cheat-modal" 
+       class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md hidden flex items-center justify-center p-4"
+       role="dialog" 
+       aria-modal="true" 
+       aria-labelledby="viva-modal-title"
+       aria-hidden="true">
+    
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative max-h-[92vh] overflow-y-auto">
+      
+      <!-- Close Button -->
+      <button type="button" 
+              id="viva-modal-close" 
+              class="absolute top-5 right-5 p-2 text-slate-400 hover:text-slate-800 rounded-lg hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-sky-500"
+              aria-label="Close Viva Cheat Sheet">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-12 h-12 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-2xl shadow-md">
+          🎓
+        </div>
+        <div>
+          <h3 id="viva-modal-title" class="text-2xl font-black text-slate-900">HCI Examination Viva Guide</h3>
+          <p class="text-xs text-sky-700 font-bold uppercase tracking-wider">HCI Topic 3 (Inclusive Design) & Topic 8 (Visual Haptic Emulation)</p>
+        </div>
+      </div>
+
+      <!-- Dynamic content container or permanent cheat sheet -->
+      <div id="viva-cheat-content" class="space-y-6 text-sm text-slate-700">
+        
+        <!-- Topic 3 Card -->
+        <div class="p-5 bg-sky-50 rounded-xl border border-sky-200 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="font-black text-sky-950 text-base">Topic 3: Inclusive Design & WCAG 2.1 Framework</h4>
+            <span class="px-2 py-0.5 text-[10px] font-black bg-sky-200 text-sky-900 rounded">Level AA & AAA</span>
+          </div>
+          <p class="leading-relaxed">
+            <strong>The 4 WCAG Pillars (POUR):</strong>
+          </p>
+          <ul class="list-disc list-inside space-y-1 text-xs text-sky-900">
+            <li><strong>Perceivable (1.4.1, 1.4.3):</strong> Information must not rely on a single sensory modality (e.g., swatches use shape + text + color; contrast ratio $\ge 4.5:1$).</li>
+            <li><strong>Operable (2.1.1, 2.4.7):</strong> Complete keyboard operability without traps; visible focus indicators with minimum $3:1$ contrast against adjacent background.</li>
+            <li><strong>Understandable (3.3.1):</strong> Clear, textual error identification with explicit error remediation steps.</li>
+            <li><strong>Robust (4.1.2):</strong> WAI-ARIA states, roles, and values ensuring cross-compatibility with screen readers.</li>
+          </ul>
+        </div>
+
+        <!-- Topic 8 Card -->
+        <div class="p-5 bg-indigo-50 rounded-xl border border-indigo-200 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="font-black text-indigo-950 text-base">Topic 8: Visual Haptic & Tactile Emulation</h4>
+            <span class="px-2 py-0.5 text-[10px] font-black bg-indigo-200 text-indigo-900 rounded">Cross-Modal Synthesis</span>
+          </div>
+          <p class="leading-relaxed text-indigo-950">
+            <strong>Cross-Modal Sensory Substitution Principle:</strong>
+          </p>
+          <p class="text-xs text-indigo-900 leading-relaxed">
+            When hardware actuators (vibration motors) are missing or in browser-only web environments, sensory feedback can be emulated by synchronizing:
+          </p>
+          <ul class="list-disc list-inside space-y-1 text-xs text-indigo-900">
+            <li><strong>Mechanical Spring Travel:</strong> Micro-squash and stretch (<code class="bg-indigo-100 px-1 py-0.5 rounded text-[11px]">.tactile-bump</code>) simulating physical key depression.</li>
+            <li><strong>Wave Dispersion:</strong> Radial shockwave (<code class="bg-indigo-100 px-1 py-0.5 rounded text-[11px]">.haptic-ripple</code>) simulating vibration propagation across a surface.</li>
+            <li><strong>Boundary Collision Recoil:</strong> Edge-of-screen flash & synthetic low-frequency acoustic bump on reaching slider bounds (0 or 5 quantity limit).</li>
+            <li><strong>Synthetic Web Audio Click:</strong> Dual-sensory confirmation using native Web Audio API oscillators (zero audio files or mic needed).</li>
+          </ul>
+        </div>
+
+        <!-- Step-by-Step Viva Examiner Script -->
+        <div class="p-5 bg-slate-900 text-white rounded-xl space-y-3">
+          <h4 class="font-black text-amber-400 text-base">Examiner Demonstration Script</h4>
+          <ol class="list-decimal list-inside space-y-2 text-xs text-slate-300">
+            <li><strong class="text-white">Show Swatch Multi-Cues:</strong> Open Adaptability Engine &rarr; Enable <em>Achromatopsia</em>. Notice how the swatches remain 100% identifiable because each has a distinct geometric symbol (Circle, Square, Triangle, Diamond).</li>
+            <li><strong class="text-white">Demonstrate Dyslexia Adaptation:</strong> Enable <em>OpenDyslexic</em> font + <em>Wide Spacing</em> + <em>Reading Ruler</em>. Explain how bottom-weighted glyphs prevent letter inversion.</li>
+            <li><strong class="text-white">Demonstrate Visual Haptics:</strong> Click quantity increment until it hits 5. Observe the tactile boundary recoil flash and acoustic micro-tick.</li>
+            <li><strong class="text-white">Demonstrate Keyboard Navigation:</strong> Press <kbd class="px-1 py-0.5 bg-slate-800 rounded font-mono">Tab</kbd> from top. See the "Skip to main content" link and pulsating high-visibility focus ring.</li>
+          </ol>
+        </div>
+
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-slate-200 flex justify-end">
+        <button type="button" 
+                onclick="document.getElementById('viva-modal-close').click()" 
+                class="px-5 py-2.5 bg-slate-900 text-white font-bold text-xs rounded-lg hover:bg-slate-800 transition-colors">
+          Close Guide
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       FOOTER: Semantic & Accessible Footer
+       ====================================================================== -->
+  <footer class="bg-white border-t border-slate-200 py-8 transition-colors mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <div>
+        <p class="font-bold text-slate-700">InclusionKit &copy; 2026 HCI Academic Portfolio</p>
+        <p>Demonstrating Inclusive Design (Topic 3) & Visual Haptic Emulation (Topic 8)</p>
+      </div>
+      <div class="flex items-center gap-4">
+        <button type="button" class="btn-open-viva hover:text-sky-600 font-semibold underline underline-offset-4">
+          Viva Quick Reference
+        </button>
+        <button type="button" class="btn-trigger-inspector hover:text-sky-600 font-semibold underline underline-offset-4">
+          WCAG Inspector
+        </button>
+        <button type="button" class="btn-reset-inclusionkit hover:text-sky-600 font-semibold underline underline-offset-4">
+          Reset Preferences
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================================================================
+       JAVASCRIPT ARCHITECTURE (Modular Namespaced Execution)
+       Zero build step required &mdash; runs directly on GitHub Pages or local file://
+       ====================================================================== -->
+  <script src="js/state.js"></script>
+  <script src="js/colorFilters.js"></script>
+  <script src="js/typography.js"></script>
+  <script src="js/visualHaptics.js"></script>
+  <script src="js/wcagInspector.js"></script>
+  <script src="js/ecommerceDemo.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
