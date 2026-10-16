@@ -188,6 +188,8 @@ window.InclusionKit = window.InclusionKit || {};
     }
   }
 
-  // Export module singleton
-  window.InclusionKit.TypographyEngine = new TypographyEngine();
+  // Export module singleton — deferred to DOMContentLoaded so DOM queries succeed
+  document.addEventListener('DOMContentLoaded', () => {
+    window.InclusionKit.TypographyEngine = new TypographyEngine();
+  });
 })();

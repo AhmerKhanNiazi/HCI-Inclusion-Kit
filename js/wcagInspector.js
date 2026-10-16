@@ -268,6 +268,8 @@ window.InclusionKit = window.InclusionKit || {};
     }
   }
 
-  // Export module singleton
-  window.InclusionKit.WCAGInspector = new WCAGInspector();
+  // Export module singleton — deferred to DOMContentLoaded so body.appendChild works
+  document.addEventListener('DOMContentLoaded', () => {
+    window.InclusionKit.WCAGInspector = new WCAGInspector();
+  });
 })();

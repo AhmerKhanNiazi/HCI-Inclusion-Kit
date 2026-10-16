@@ -17,7 +17,8 @@ window.InclusionKit = window.InclusionKit || {};
   'use strict';
 
   const State = window.InclusionKit.State;
-  const Haptics = window.InclusionKit.VisualHapticEngine;
+  // Lazy getter — VisualHapticEngine is created in its own DOMContentLoaded, so we resolve it at call-time
+  const Haptics = () => window.InclusionKit.VisualHapticEngine;
 
   // Product finish variants with multi-modal cues (Color + Symbol + Text)
   const PRODUCT_VARIANTS = {
@@ -143,13 +144,13 @@ window.InclusionKit = window.InclusionKit || {};
       const updateQty = (newQty) => {
         if (newQty < 1) {
           // Reached lower bound: trigger tactile boundary collision flash!
-          Haptics.triggerBoundaryCollision();
+          Haptics().triggerBoundaryCollision();
           State.announce('Minimum order quantity of 1 reached.');
           return;
         }
         if (newQty > 5) {
           // Reached upper bound: trigger tactile boundary collision flash!
-          Haptics.triggerBoundaryCollision();
+          Haptics().triggerBoundaryCollision();
           State.announce('Maximum order limit of 5 units per customer reached.');
           return;
         }
@@ -348,7 +349,7 @@ window.InclusionKit = window.InclusionKit || {};
 
           if (hasErrors) {
             // Trigger tactile collision shock
-            Haptics.triggerBoundaryCollision();
+            Haptics().triggerBoundaryCollision();
             if (firstErrorField) {
               firstErrorField.focus();
             }
@@ -368,6 +369,8 @@ window.InclusionKit = window.InclusionKit || {};
     }
   }
 
-  // Export module singleton
-  window.InclusionKit.EcommerceDemo = new EcommerceDemo();
+  // Export module singleton — deferred to DOMContentLoaded so all bindXxx() DOM queries work
+  document.addEventListener('DOMContentLoaded', () => {
+    window.InclusionKit.EcommerceDemo = new EcommerceDemo();
+  });
 })();

@@ -133,6 +133,8 @@ window.InclusionKit = window.InclusionKit || {};
     }
   }
 
-  // Export module singleton
-  window.InclusionKit.ColorFilterEngine = new ColorFilterEngine();
+  // Export module singleton — deferred to DOMContentLoaded so querySelectorAll finds real elements
+  document.addEventListener('DOMContentLoaded', () => {
+    window.InclusionKit.ColorFilterEngine = new ColorFilterEngine();
+  });
 })();

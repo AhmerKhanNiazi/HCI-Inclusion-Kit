@@ -564,7 +564,7 @@
 
     <!-- Slide-in Drawer Container -->
     <div id="accessibility-dock" 
-         class="fixed bottom-22 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden translate-x-full opacity-0 pointer-events-none transition-all duration-300 flex flex-col max-h-[82vh]"
+         class="fixed bottom-[88px] right-6 z-50 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden translate-x-full opacity-0 pointer-events-none transition-all duration-300 flex flex-col max-h-[82vh]"
          role="region" 
          aria-label="InclusionKit Adaptability Engine">
       
@@ -819,7 +819,7 @@
               <h4 class="font-bold text-xs text-sky-950 uppercase tracking-wider">Live Examiner Inspector</h4>
               <p class="text-xs text-sky-900 mt-0.5">Highlights all interactive UI elements and shows exact WCAG criteria on hover.</p>
             </div>
-            <button type="button" id="toggle-wcag-inspector" class="w-full py-2.5 px-4 rounded-lg bg-sky-600 text-white font-bold text-xs hover:bg-sky-700 transition-colors shadow-sm flex items-center justify-center gap-2">
+            <button type="button" id="toggle-wcag-inspector" class="btn-trigger-inspector w-full py-2.5 px-4 rounded-lg bg-sky-600 text-white font-bold text-xs hover:bg-sky-700 transition-colors shadow-sm flex items-center justify-center gap-2" aria-pressed="false">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
               <span>Toggle Inspector Mode (Alt + I)</span>
             </button>

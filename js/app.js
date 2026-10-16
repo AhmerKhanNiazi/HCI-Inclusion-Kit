@@ -14,8 +14,9 @@ window.InclusionKit = window.InclusionKit || {};
   'use strict';
 
   const State = window.InclusionKit.State;
-  const Haptics = window.InclusionKit.VisualHapticEngine;
-  const Inspector = window.InclusionKit.WCAGInspector;
+  // Lazy getters — these modules are initialized in their own DOMContentLoaded handlers
+  const Haptics = () => window.InclusionKit.VisualHapticEngine;
+  const Inspector = () => window.InclusionKit.WCAGInspector;
 
   class AppController {
     constructor() {
@@ -332,7 +333,7 @@ window.InclusionKit = window.InclusionKit || {};
       resetBtns.forEach(btn => {
         btn.addEventListener('click', () => {
           State.resetAll();
-          Haptics.triggerBoundaryCollision();
+          Haptics().triggerBoundaryCollision();
         });
       });
     }

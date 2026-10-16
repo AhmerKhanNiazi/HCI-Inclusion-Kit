@@ -300,6 +300,9 @@ window.InclusionKit = window.InclusionKit || {};
     }
   }
 
-  // Export module singleton
-  window.InclusionKit.VisualHapticEngine = new VisualHapticEngine();
+  // Export module singleton — deferred to DOMContentLoaded
+  // Note: document event listeners still work fine inside, DOM queries now safe
+  document.addEventListener('DOMContentLoaded', () => {
+    window.InclusionKit.VisualHapticEngine = new VisualHapticEngine();
+  });
 })();
