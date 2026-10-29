@@ -1173,54 +1173,110 @@
         </div>
 
         <!-- Two-Way Voice Commands & Switch Control Guide (WCAG 2.1 AAA) -->
-        <div class="p-5 bg-emerald-50 rounded-xl border border-emerald-300 space-y-3">
+        <div class="p-5 bg-emerald-50 rounded-xl border border-emerald-300 space-y-4">
           <div class="flex items-center justify-between">
             <h4 class="font-black text-emerald-950 text-base flex items-center gap-2">
-              <span>🎙️</span> Two-Way Voice Commands & Switch Shortcuts
+              <span>🎙️</span> Complete Hands-Free Voice Commands Directory
             </h4>
-            <span class="px-2 py-0.5 text-[10px] font-black bg-emerald-200 text-emerald-900 rounded">WCAG 2.1 AAA</span>
+            <span class="px-2 py-0.5 text-[10px] font-black bg-emerald-200 text-emerald-900 rounded">WCAG 2.1 AAA Compliant</span>
           </div>
           <p class="text-xs text-emerald-900 leading-relaxed">
-            Hands-free speech control with conversational Text-to-Speech (TTS) auditory feedback. Toggle microphone via the header button or press <kbd class="px-1 py-0.5 bg-white border border-emerald-300 rounded font-mono font-bold">V</kbd>.
+            Hands-free two-way speech control with Text-to-Speech (TTS) auditory confirmation. Toggle microphone via the header button or press <kbd class="px-1 py-0.5 bg-white border border-emerald-300 rounded font-mono font-bold">V</kbd>.
           </p>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-            <div class="p-2.5 bg-white rounded-lg border border-emerald-200">
-              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Enable read mode" / "Stop reading"</span>
-              <span class="text-slate-600 text-[11px]">Hover over any text/button/price to hear it spoken</span>
+
+          <!-- Grouped Commands Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            
+            <!-- Category 1: Screen Reading -->
+            <div class="p-3 bg-white rounded-lg border border-emerald-200 shadow-sm space-y-1">
+              <span class="font-bold text-emerald-900 block text-[13px] border-b border-emerald-100 pb-1">📖 1. Point-to-Speak & Reading</span>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Enable read mode"</code> / <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Stop reading"</code></p>
+              <p class="text-slate-500 text-[10.5px]">Hover your mouse cursor over any element to hear it spoken aloud.</p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Read page summary"</code> | <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Stop speaking"</code></p>
+              <p class="text-slate-500 text-[10.5px]">Reads semantic screen overview or instantly mutes assistant speech.</p>
             </div>
-            <div class="p-2.5 bg-white rounded-lg border border-emerald-200">
-              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Scroll down / up / to top"</span>
-              <span class="text-slate-600 text-[11px]">Hands-free viewport scrolling & section jumping</span>
+
+            <!-- Category 2: Navigation & Scrolling -->
+            <div class="p-3 bg-white rounded-lg border border-emerald-200 shadow-sm space-y-1">
+              <span class="font-bold text-emerald-900 block text-[13px] border-b border-emerald-100 pb-1">🧭 2. Page Scrolling & Tabs</span>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Scroll down"</code> | <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Scroll up"</code></p>
+              <p class="text-slate-500 text-[10.5px]">Smooth viewport motion up or down.</p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Scroll to top"</code> | <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Scroll to bottom"</code></p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Go to specs"</code> | <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Go to reviews"</code> | <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Go to accessibility"</code></p>
             </div>
-            <div class="p-2.5 bg-white rounded-lg border border-emerald-200">
-              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Select black / white / orange / blue"</span>
-              <span class="text-slate-600 text-[11px]">Voice triggers accessible color variant swatches</span>
+
+            <!-- Category 3: Color Swatches -->
+            <div class="p-3 bg-white rounded-lg border border-emerald-200 shadow-sm space-y-1">
+              <span class="font-bold text-emerald-900 block text-[13px] border-b border-emerald-100 pb-1">🎨 3. Color Swatch Finishes</span>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Select black"</code> (Obsidian &bull; Circle)</p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Select white"</code> (Chalk &bull; Square)</p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Select orange"</code> (Coral &bull; Triangle)</p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Select blue"</code> (Azure &bull; Diamond)</p>
+              <p class="text-slate-500 text-[10.5px]">Triggers accessible non-color geometric variant indicators.</p>
             </div>
-            <div class="p-2.5 bg-white rounded-lg border border-emerald-200">
-              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Increase quantity" / "Quantity 1 to 5"</span>
-              <span class="text-slate-600 text-[11px]">Controls tactile stepper & boundary constraints</span>
+
+            <!-- Category 4: Quantity & Stepper -->
+            <div class="p-3 bg-white rounded-lg border border-emerald-200 shadow-sm space-y-1">
+              <span class="font-bold text-emerald-900 block text-[13px] border-b border-emerald-100 pb-1">🔢 4. Quantity Stepper & Bounds</span>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Increase quantity"</code> / <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Decrease quantity"</code></p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Quantity 1"</code> to <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Quantity 5"</code></p>
+              <p class="text-slate-500 text-[10.5px]">Enforces tactile recoil boundary at 0 and 5 units limit.</p>
             </div>
-            <div class="p-2.5 bg-white rounded-lg border border-emerald-200">
-              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Add to cart" / "Open cart" / "Checkout"</span>
-              <span class="text-slate-600 text-[11px]">Full accessible shopping & purchasing flow</span>
+
+            <!-- Category 5: Shopping & Checkout -->
+            <div class="p-3 bg-white rounded-lg border border-emerald-200 shadow-sm space-y-1">
+              <span class="font-bold text-emerald-900 block text-[13px] border-b border-emerald-100 pb-1">🛒 5. E-Commerce Cart & Checkout</span>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Add to cart"</code> | <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Open cart"</code> | <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Close cart"</code></p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Checkout"</code> | <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Close checkout"</code></p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"What is the price"</code> | <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"What are the reviews"</code></p>
+              <p class="text-slate-500 text-[10.5px]">Hands-free purchasing, drawer manipulation, and pricing breakdown.</p>
             </div>
-            <div class="p-2.5 bg-white rounded-lg border border-emerald-200">
-              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "High contrast" / "Dyslexic font"</span>
-              <span class="text-slate-600 text-[11px]">Solid 18:1 contrast, zoom & neurodiverse typography</span>
+
+            <!-- Category 6: Contrast & Typography -->
+            <div class="p-3 bg-white rounded-lg border border-emerald-200 shadow-sm space-y-1">
+              <span class="font-bold text-emerald-900 block text-[13px] border-b border-emerald-100 pb-1">👁️ 6. Contrast & Typography</span>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"High contrast"</code> | <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Normal contrast"</code></p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Increase font"</code> | <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Reset font"</code></p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Dyslexic font"</code> | <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Hyperlegible font"</code></p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Letter spacing"</code> | <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Line height"</code></p>
             </div>
-            <div class="p-2.5 bg-white rounded-lg border border-emerald-200">
-              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "What is the price" / "What are reviews"</span>
-              <span class="text-slate-600 text-[11px]">Spoken pricing, discount breakdown & review ratings</span>
+
+            <!-- Category 7: Colorblindness Simulation -->
+            <div class="p-3 bg-white rounded-lg border border-emerald-200 shadow-sm space-y-1">
+              <span class="font-bold text-emerald-900 block text-[13px] border-b border-emerald-100 pb-1">🌈 7. Colorblindness Filters</span>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Protanopia"</code> (Red-blind)</p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Deuteranopia"</code> (Green-blind)</p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Tritanopia"</code> (Blue-blind)</p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Grayscale"</code> / <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Normal color"</code></p>
             </div>
-            <div class="p-2.5 bg-white rounded-lg border border-emerald-200">
-              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Stop speaking" / "Silence"</span>
-              <span class="text-slate-600 text-[11px]">Instant speech synthesis mute & command dismissal</span>
+
+            <!-- Category 8: Sensory Audio (Topic 8) -->
+            <div class="p-3 bg-white rounded-lg border border-emerald-200 shadow-sm space-y-1">
+              <span class="font-bold text-emerald-900 block text-[13px] border-b border-emerald-100 pb-1">📳 8. Sensory Aids & Acoustic Masking</span>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Reading ruler"</code> / <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Hide ruler"</code></p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Focus spotlight"</code></p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Masking noise"</code> / <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Stop rain"</code></p>
+              <p class="text-slate-700 font-semibold text-[11px]"><code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Play sound"</code> | <code class="text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">"Mute audio"</code></p>
             </div>
+
           </div>
-          <div class="p-2.5 bg-emerald-100/70 rounded-lg text-[11px] text-emerald-900 font-semibold flex items-center justify-between">
-            <span>Single-Key Switch Access:</span>
-            <span><kbd class="px-1 bg-white rounded border">V</kbd> Voice &nbsp;|&nbsp; <kbd class="px-1 bg-white rounded border">C</kbd> Contrast &nbsp;|&nbsp; <kbd class="px-1 bg-white rounded border">F</kbd> Font &nbsp;|&nbsp; <kbd class="px-1 bg-white rounded border">?</kbd> Guide</span>
+
+          <!-- Noise & Accent Tolerance Notice -->
+          <div class="p-3 bg-emerald-100/90 rounded-lg text-[11.5px] text-emerald-950 font-medium space-y-1 border border-emerald-200">
+            <div class="flex items-center gap-1.5 font-bold text-emerald-900">
+              <span>🧠</span> <span>Intelligent Noise & Pronunciation Tolerance Engine</span>
+            </div>
+            <p class="leading-relaxed">
+              InclusionKit uses fuzzy intent clustering. It automatically tolerates accents, ambient noise, conversational phrasing (e.g. <em>"please scroll down"</em>, <em>"ad to card"</em>, <em>"reed mod on"</em>), and silently ignores accidental mic breaths/clicks without false error interruptions.
+            </p>
           </div>
+
+          <!-- Switch Shortcuts Pill -->
+          <div class="p-2.5 bg-emerald-200/60 rounded-lg text-[11px] text-emerald-950 font-semibold flex items-center justify-between flex-wrap gap-2">
+            <span>Single-Key Switch Hardware Shortcuts:</span>
+            <span><kbd class="px-1.5 py-0.5 bg-white rounded border font-mono">V</kbd> Voice &nbsp;|&nbsp; <kbd class="px-1.5 py-0.5 bg-white rounded border font-mono">C</kbd> Contrast &nbsp;|&nbsp; <kbd class="px-1.5 py-0.5 bg-white rounded border font-mono">F</kbd> Font &nbsp;|&nbsp; <kbd class="px-1.5 py-0.5 bg-white rounded border font-mono">?</kbd> Guide &nbsp;|&nbsp; <kbd class="px-1.5 py-0.5 bg-white rounded border font-mono">Esc</kbd> Dismiss</span>
+          </div>
+
         </div>
 
         <!-- Step-by-Step Viva Examiner Script -->

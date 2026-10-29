@@ -960,23 +960,366 @@ document.addEventListener('DOMContentLoaded', () => {
     },
   ];
 
+  /* ─────────────────────────────────────────────────────────────────────────
+   * 7.2 Intelligent Noise Filter & Pronunciation-Tolerant Command Matcher
+   * ───────────────────────────────────────────────────────────────────────── */
+
+  /** Filler words, micro-clicks, and noise utterances to ignore silently. */
+  const NOISE_WORDS = new Set([
+    '', 'a', 'an', 'the', 'um', 'uh', 'ah', 'oh', 'hmm', 'huh', 'so', 'p', 't', 'k',
+    'yeah', 'yes', 'no', 'ok', 'okay', 'well', 'like', 'just', 'you know'
+  ]);
+
+  /**
+   * Detects whether an utterance is meaningless background noise or filler sounds.
+   * @param {string} text - Cleaned utterance string.
+   * @returns {boolean} True if text is noise and should be ignored without prompt.
+   */
+  function isNoise(text) {
+    if (!text || text.length < 3) return true;
+    if (NOISE_WORDS.has(text)) return true;
+    // Repeated single-character noise like "aaaa", "shhhh"
+    if (/^(.)\1+$/.test(text)) return true;
+    return false;
+  }
+
   /**
    * Attempts to match a transcript string against the known command list.
-   * Uses case-insensitive substring matching ("fuzzy" intent detection).
+   * Tolerates accents, slurred pronunciation, background noise, and conversational padding.
    *
    * @param {string} transcript - Spoken transcript from SpeechRecognition.
    * @returns {boolean} `true` if a command was matched and executed, `false` otherwise.
    */
   function parseCommand(transcript) {
-    const clean = transcript.toLowerCase().trim().replace(/[.,?!]+$/, '');
+    if (!transcript) return false;
+    const clean = transcript
+      .toLowerCase()
+      .trim()
+      .replace(/[.,?!:;'"-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // 1. Noise check: Ignore breathing, clicks, or filler words silently
+    if (isNoise(clean)) {
+      return false;
+    }
+
+    // 2. Exact & Substring Pattern Match
     for (const cmd of COMMANDS) {
       if (cmd.patterns.some((p) => clean.includes(p))) {
         cmd.action();
         return true;
       }
     }
-    // No match — inform user with hint.
-    speak('Command not recognised. Say help for commands or say read mode to hear elements you hover on.');
+
+    // 3. Pronunciation & Fuzzy Intent Matcher (Handles accents & conversational phrasing)
+    const words = clean.split(' ');
+    const has = (...terms) => terms.some((t) => clean.includes(t) || words.includes(t));
+
+    // A. Hover-to-Read (Point to Speak)
+    if (
+      has('read', 'reed', 'red', 'hover', 'point', 'cursor') &&
+      has('mode', 'start', 'on', 'speak', 'enable', 'turn on')
+    ) {
+      enableHoverRead();
+      return true;
+    }
+    if (
+      has('stop', 'disable', 'off', 'exit', 'cancel') &&
+      has('read', 'reading', 'reed', 'hover')
+    ) {
+      disableHoverRead();
+      return true;
+    }
+
+    // B. Scrolling & Viewport Navigation
+    if (
+      has('scroll', 'scrol', 'skroll', 'roll', 'go', 'move', 'page') &&
+      has('down', 'dawn', 'don', 'bottom')
+    ) {
+      if (has('bottom', 'footer', 'end')) {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        speak('Scrolled to bottom of page');
+      } else {
+        window.scrollBy({ top: 450, behavior: 'smooth' });
+        speak('Scrolling down');
+      }
+      return true;
+    }
+    if (
+      has('scroll', 'scrol', 'skroll', 'roll', 'go', 'move', 'page') &&
+      has('up', 'ap', 'top')
+    ) {
+      if (has('top', 'start', 'begin', 'head')) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        speak('Scrolled to top of page');
+      } else {
+        window.scrollBy({ top: -450, behavior: 'smooth' });
+        speak('Scrolling up');
+      }
+      return true;
+    }
+    if (has('top', 'header') && has('go', 'scroll', 'back')) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      speak('Scrolled to top of page');
+      return true;
+    }
+    if (has('bottom', 'footer') && has('go', 'scroll')) {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      speak('Scrolled to bottom of page');
+      return true;
+    }
+
+    // C. E-Commerce Cart & Checkout
+    if (has('cart', 'card', 'basket', 'bag')) {
+      if (has('add', 'ad', 'put', 'insert', 'buy')) {
+        document.getElementById('btn-add-to-cart')?.click();
+        speak('Added AuraPulse Max to your shopping cart');
+        return true;
+      }
+      if (has('open', 'show', 'view', 'display', 'see')) {
+        document.getElementById('header-cart-btn')?.click();
+        speak('Shopping cart opened');
+        return true;
+      }
+      if (has('close', 'hide', 'dismiss')) {
+        document.getElementById('btn-close-cart')?.click();
+        speak('Cart closed');
+        return true;
+      }
+    }
+    if (has('check', 'checkout', 'pay', 'purchase', 'order', 'buy now')) {
+      if (has('close', 'cancel')) {
+        document.getElementById('btn-close-checkout')?.click();
+        speak('Checkout dialog closed');
+      } else {
+        document.getElementById('btn-buy-now')?.click();
+        speak('Opening accessible checkout dialog');
+      }
+      return true;
+    }
+
+    // D. Color Swatches (Non-Color Cues)
+    if (has('black', 'obsidian', 'dark', 'circle')) {
+      document.querySelector('[data-product-variant="obsidian"]')?.click();
+      speak('Cosmic Obsidian black finish selected');
+      return true;
+    }
+    if (has('white', 'chalk', 'chock', 'square')) {
+      document.querySelector('[data-product-variant="chalk"]')?.click();
+      speak('Alpine Chalk white finish selected');
+      return true;
+    }
+    if (has('orange', 'coral', 'corol', 'triangle', 'reddish')) {
+      document.querySelector('[data-product-variant="coral"]')?.click();
+      speak('Coral Sunrise finish selected');
+      return true;
+    }
+    if (has('blue', 'azure', 'azur', 'diamond', 'sky')) {
+      document.querySelector('[data-product-variant="azure"]')?.click();
+      speak('Pacific Azure blue finish selected');
+      return true;
+    }
+
+    // E. Quantity Controls & Stepper
+    if (has('quantity', 'quanty', 'qty', 'count', 'items', 'item')) {
+      if (has('more', 'increase', 'plus', 'add', 'up')) {
+        document.getElementById('btn-qty-increase')?.click();
+        const q = document.getElementById('product-qty-input')?.value || '1';
+        speak(`Quantity increased to ${q}`);
+        return true;
+      }
+      if (has('less', 'decrease', 'reduce', 'minus', 'down')) {
+        document.getElementById('btn-qty-decrease')?.click();
+        const q = document.getElementById('product-qty-input')?.value || '1';
+        speak(`Quantity decreased to ${q}`);
+        return true;
+      }
+      const numWords = ['one', 'two', 'three', 'four', 'five'];
+      for (let i = 1; i <= 5; i++) {
+        if (has(String(i), numWords[i - 1])) {
+          const inp = document.getElementById('product-qty-input');
+          if (inp) {
+            inp.value = String(i);
+            inp.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+          speak(`Quantity set to ${i}`);
+          return true;
+        }
+      }
+    }
+
+    // F. Tabs (Specs, Reviews, Accessibility)
+    if (has('spec', 'specification', 'specs', 'feature', 'technical')) {
+      const tab = document.getElementById('tab-specs');
+      tab?.click();
+      tab?.scrollIntoView({ behavior: 'smooth' });
+      speak('Technical specifications displayed');
+      return true;
+    }
+    if (has('review', 'rating', 'star', 'feedback')) {
+      if (has('read', 'what', 'how', 'tell')) {
+        speak('Rated 4.9 out of 5 stars based on 1,280 verified customer reviews.');
+      } else {
+        const tab = document.getElementById('tab-reviews');
+        tab?.click();
+        tab?.scrollIntoView({ behavior: 'smooth' });
+        speak('Customer reviews displayed');
+      }
+      return true;
+    }
+    if (has('accessibility', 'inclusion', 'inclusive')) {
+      const tab = document.getElementById('tab-accessibility');
+      tab?.click();
+      tab?.scrollIntoView({ behavior: 'smooth' });
+      speak('Accessibility features panel displayed');
+      return true;
+    }
+
+    // G. Price Inquiry
+    if (has('price', 'cost', 'rate', 'dollar', 'how much')) {
+      speak('AuraPulse Max is on sale for 219 dollars, discounted from 299 dollars, saving you 80 dollars or 27 percent.');
+      return true;
+    }
+
+    // H. Contrast Modes
+    if (has('contrast', 'contras')) {
+      if (has('high', 'dark', 'black', 'aaa', 'on', 'enable')) {
+        State?.set('contrastMode', 'high');
+        window.InclusionKit?.AcousticEngine?.playConfirm();
+        speak('High contrast mode enabled');
+        return true;
+      }
+      if (has('normal', 'light', 'off', 'reset', 'disable')) {
+        State?.set('contrastMode', 'normal');
+        window.InclusionKit?.AcousticEngine?.playConfirm();
+        speak('Normal contrast restored');
+        return true;
+      }
+      if (has('invert', 'inverted')) {
+        State?.set('contrastMode', 'inverted');
+        window.InclusionKit?.AcousticEngine?.playConfirm();
+        speak('Inverted color contrast mode active');
+        return true;
+      }
+    }
+
+    // I. Typography & Font Scaling
+    if (has('font', 'text', 'zoom', 'size')) {
+      if (has('increase', 'bigger', 'large', 'plus', 'in', 'more')) {
+        const next = cycleFontScaleUp();
+        window.InclusionKit?.AcousticEngine?.playChime();
+        speak(`Font increased to ${Math.round(next * 100)} percent`);
+        return true;
+      }
+      if (has('decrease', 'smaller', 'small', 'minus', 'out', 'less')) {
+        const steps = [1.0, 1.25, 1.5, 2.0];
+        const current = State?.get('fontScale') || 1.0;
+        let idx = steps.findIndex((s) => Math.abs(s - current) < 0.05);
+        if (idx === -1) idx = 1;
+        const next = steps[(idx - 1 + steps.length) % steps.length];
+        State?.set('fontScale', next);
+        window.InclusionKit?.AcousticEngine?.playChime();
+        speak(`Font adjusted to ${Math.round(next * 100)} percent`);
+        return true;
+      }
+      if (has('reset', 'normal', 'default', '100')) {
+        State?.set('fontScale', 1.0);
+        window.InclusionKit?.AcousticEngine?.playConfirm();
+        speak('Font reset to normal 100 percent');
+        return true;
+      }
+      if (has('dyslex', 'opendyslexic')) {
+        State?.set('fontFamily', 'dyslexic');
+        speak('OpenDyslexic weighted font enabled');
+        return true;
+      }
+      if (has('hyper', 'atkinson', 'braille')) {
+        State?.set('fontFamily', 'hyperlegible');
+        speak('Atkinson Hyperlegible low vision font enabled');
+        return true;
+      }
+    }
+
+    // J. Sensory Aids (Topic 8)
+    if (has('ruler', 'guide', 'line')) {
+      if (has('off', 'hide', 'disable', 'close')) {
+        State?.set('readingRuler', false);
+        speak('Reading guide ruler hidden');
+      } else {
+        State?.set('readingRuler', true);
+        speak('Reading guide ruler activated');
+      }
+      return true;
+    }
+    if (has('rain', 'masking', 'ambient', 'white noise')) {
+      if (has('stop', 'off', 'mute', 'end')) {
+        window.InclusionKit?.AcousticEngine?.stopMaskingNoise();
+        speak('Acoustic masking noise stopped');
+      } else {
+        window.InclusionKit?.AcousticEngine?.toggleMaskingNoise();
+      }
+      return true;
+    }
+    if (has('sound', 'chime', 'tick', 'beep')) {
+      window.InclusionKit?.AcousticEngine?.playChime();
+      speak('Acoustic chime played');
+      return true;
+    }
+    if (has('mute')) {
+      State?.set('hapticSound', false);
+      speak('Audio muted');
+      return true;
+    }
+    if (has('unmute')) {
+      State?.set('hapticSound', true);
+      window.InclusionKit?.AcousticEngine?.playConfirm();
+      speak('Audio enabled');
+      return true;
+    }
+
+    // K. Inspector & Examiner Help
+    if (has('inspect', 'audit', 'wcag')) {
+      if (has('close', 'exit', 'stop')) {
+        State?.set('inspectorActive', false);
+        speak('WCAG inspector closed');
+      } else {
+        State?.set('inspectorActive', true);
+        speak('WCAG 2.1 inspector mode opened. Click any element to audit.');
+      }
+      return true;
+    }
+    if (has('help', 'command', 'viva', 'guide', 'what can i say')) {
+      document.querySelector('.btn-open-viva')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      speak('Opening accessibility guide and full voice command reference');
+      return true;
+    }
+    if (
+      has('close', 'exit', 'dismiss', 'escape', 'cancel') &&
+      (has('dialog', 'modal', 'window') || words.length <= 2)
+    ) {
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Escape',
+          code: 'Escape',
+          keyCode: 27,
+          bubbles: true,
+          cancelable: true,
+        })
+      );
+      speak('Dialog dismissed');
+      return true;
+    }
+    if (has('stop', 'quiet', 'silence', 'shut')) {
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      isSpeakingTTS = false;
+      return true;
+    }
+
+    // 4. Fallback: Only prompt if it was a distinct multi-word phrase
+    if (clean.length >= 6 && words.length >= 2) {
+      speak("Sorry, I didn't catch that command. Say help for commands or say read mode.");
+    }
     return false;
   }
 
