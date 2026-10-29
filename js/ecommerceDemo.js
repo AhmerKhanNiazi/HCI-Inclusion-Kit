@@ -107,6 +107,8 @@ window.InclusionKit = window.InclusionKit || {};
             productImage.alt = variant.alt;
           }
 
+          window.InclusionKit?.AcousticEngine?.playClick();
+
           State.announce(`Selected finish: ${variant.name}, identified by ${variant.shape}`);
         });
 
@@ -145,12 +147,14 @@ window.InclusionKit = window.InclusionKit || {};
         if (newQty < 1) {
           // Reached lower bound: trigger tactile boundary collision flash!
           Haptics().triggerBoundaryCollision();
+          window.InclusionKit?.AcousticEngine?.playError();
           State.announce('Minimum order quantity of 1 reached.');
           return;
         }
         if (newQty > 5) {
           // Reached upper bound: trigger tactile boundary collision flash!
           Haptics().triggerBoundaryCollision();
+          window.InclusionKit?.AcousticEngine?.playError();
           State.announce('Maximum order limit of 5 units per customer reached.');
           return;
         }
@@ -158,6 +162,7 @@ window.InclusionKit = window.InclusionKit || {};
         this.quantity = newQty;
         qtyInput.value = newQty;
         qtyInput.setAttribute('aria-valuenow', newQty);
+        window.InclusionKit?.AcousticEngine?.playClick();
         State.announce(`Quantity updated to ${newQty}.`);
       };
 
@@ -201,6 +206,8 @@ window.InclusionKit = window.InclusionKit || {};
             panel.classList.toggle('hidden', !isMatch);
             panel.setAttribute('tabindex', isMatch ? '0' : '-1');
           });
+
+          window.InclusionKit?.AcousticEngine?.playClick();
 
           State.announce(`Switched to tab: ${tab.textContent.trim()}`);
         });
@@ -276,6 +283,8 @@ window.InclusionKit = window.InclusionKit || {};
         cartBadge && cartBadge.classList.add('scale-125');
         setTimeout(() => cartBadge && cartBadge.classList.remove('scale-125'), 250);
 
+        window.InclusionKit?.AcousticEngine?.playConfirm();
+
         State.announce(
           `Added ${this.quantity} × ${variant.name} to cart. ${this.cartCount} items total.`,
           'assertive'
@@ -319,6 +328,22 @@ window.InclusionKit = window.InclusionKit || {};
         document.addEventListener('keydown', (e) => {
           if (e.key === 'Escape' && !drawer.classList.contains('translate-x-full')) {
             this.closeCartDrawer();
+          }
+        });
+
+        // WCAG 2.1.2 Focus Trap inside cart drawer
+        drawer.addEventListener('keydown', (e) => {
+          if (e.key !== 'Tab' || drawer.classList.contains('translate-x-full')) return;
+          const focusables = Array.from(drawer.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), [tabindex="0"]')).filter(el => el.offsetParent !== null);
+          if (!focusables.length) return;
+          const first = focusables[0];
+          const last = focusables[focusables.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
           }
         });
       }
@@ -554,9 +579,23 @@ window.InclusionKit = window.InclusionKit || {};
         if (e.target === modal) closeModal();
       });
 
-      document.addEventListener('keydown', (e) => {
+      // WCAG 2.1.2 Focus Trap inside checkout modal
+      modal.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
           closeModal();
+          return;
+        }
+        if (e.key !== 'Tab' || modal.classList.contains('hidden')) return;
+        const focusables = Array.from(modal.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), [tabindex="0"]')).filter(el => el.offsetParent !== null);
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
         }
       });
 
@@ -598,14 +637,16 @@ window.InclusionKit = window.InclusionKit || {};
           });
 
           if (hasErrors) {
-            // Trigger tactile collision shock
+            // Trigger tactile collision shock & audio error
             Haptics().triggerBoundaryCollision();
+            window.InclusionKit?.AcousticEngine?.playError();
             if (firstErrorField) {
               firstErrorField.focus();
             }
             State.announce('Form submission error: Please resolve highlighted validation errors.', 'assertive');
           } else {
-            // Form is valid: Show confirmation view
+            // Form is valid: Show confirmation view & play sound
+            window.InclusionKit?.AcousticEngine?.playConfirm();
             checkoutForm.classList.add('hidden');
             if (successBanner) {
               successBanner.classList.remove('hidden');

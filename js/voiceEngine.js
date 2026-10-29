@@ -78,16 +78,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Syncs all UI chrome (badge, button aria-pressed) to the current
+   * Syncs all UI chrome (badge, button aria-pressed, data-active) to the current
    * `isListening` value.
    */
   function syncUI() {
     if (badgeEl) {
       badgeEl.hidden = !isListening;
+      badgeEl.classList.toggle('hidden', !isListening);
       badgeEl.setAttribute('aria-hidden', String(!isListening));
     }
     if (toggleBtn) {
       toggleBtn.setAttribute('aria-pressed', String(isListening));
+      toggleBtn.setAttribute('data-active', String(isListening));
       toggleBtn.classList.toggle('active', isListening);
     }
   }
@@ -156,16 +158,19 @@ document.addEventListener('DOMContentLoaded', () => {
    * ───────────────────────────────────────────────────────────────────────── */
 
   /**
-   * Cycles the font scale up through the progression 1.0 → 1.1 → 1.2 → 1.3 → 1.0.
+   * Cycles the font scale up through the progression 1.0 → 1.25 → 1.5 → 2.0 → 1.0.
    * Reads the current value from State (if available) and increments it.
    */
   function cycleFontScaleUp() {
-    if (!State) return;
-    const steps = [1.0, 1.1, 1.2, 1.3];
+    if (!State) return 1.0;
+    const steps = [1.0, 1.25, 1.5, 2.0];
     const current = State.get ? State.get('fontScale') : 1.0;
-    const idx = steps.indexOf(Number(current));
+    const curNum = parseFloat(current) || 1.0;
+    let idx = steps.findIndex(s => Math.abs(s - curNum) < 0.05);
+    if (idx === -1) idx = 0;
     const next = steps[(idx + 1) % steps.length];
     State.set('fontScale', next);
+    return next;
   }
 
   /* ─────────────────────────────────────────────────────────────────────────
@@ -209,81 +214,151 @@ document.addEventListener('DOMContentLoaded', () => {
   const COMMANDS = [
     // ── Contrast ──────────────────────────────────────────────────────────
     {
-      patterns: ['high contrast', 'enable contrast'],
+      patterns: ['high contrast', 'enable contrast', 'turn on contrast', 'dark contrast', 'dark mode'],
       action() {
         State?.set('contrastMode', 'high');
+        window.InclusionKit?.AcousticEngine?.playConfirm();
         speak('High contrast mode enabled');
       },
     },
     {
-      patterns: ['normal contrast', 'disable contrast', 'reset contrast'],
+      patterns: ['normal contrast', 'disable contrast', 'reset contrast', 'turn off contrast', 'standard contrast', 'light mode'],
       action() {
         State?.set('contrastMode', 'normal');
+        window.InclusionKit?.AcousticEngine?.playConfirm();
         speak('Normal contrast restored');
       },
     },
     // ── Font size ──────────────────────────────────────────────────────────
     {
-      patterns: ['increase font', 'bigger text', 'larger font'],
+      patterns: ['increase font', 'bigger text', 'larger font', 'zoom in', 'larger text'],
       action() {
-        cycleFontScaleUp();
-        speak('Font increased');
+        const next = cycleFontScaleUp();
+        window.InclusionKit?.AcousticEngine?.playChime();
+        speak(`Font increased to ${Math.round(next * 100)} percent`);
       },
     },
     {
-      patterns: ['reset font', 'normal font'],
+      patterns: ['decrease font', 'smaller text', 'smaller font', 'zoom out'],
+      action() {
+        if (!State) return;
+        const steps = [1.0, 1.25, 1.5, 2.0];
+        const current = State.get ? State.get('fontScale') : 1.0;
+        const curNum = parseFloat(current) || 1.0;
+        let idx = steps.findIndex(s => Math.abs(s - curNum) < 0.05);
+        if (idx === -1) idx = 1;
+        const next = steps[(idx - 1 + steps.length) % steps.length];
+        State.set('fontScale', next);
+        window.InclusionKit?.AcousticEngine?.playChime();
+        speak(`Font adjusted to ${Math.round(next * 100)} percent`);
+      },
+    },
+    {
+      patterns: ['reset font', 'normal font', 'default font'],
       action() {
         State?.set('fontScale', 1.0);
-        speak('Font reset to normal');
+        window.InclusionKit?.AcousticEngine?.playConfirm();
+        speak('Font reset to normal 100 percent');
       },
     },
     // ── Colour filters ─────────────────────────────────────────────────────
     {
-      patterns: ['colorblind', 'protanopia'],
+      patterns: ['protanopia', 'red blind'],
       action() {
         State?.set('colorFilter', 'protanopia');
-        speak('Protanopia colorblind filter active');
+        speak('Protanopia red-blind simulation active');
       },
     },
     {
-      patterns: ['deuteranopia'],
+      patterns: ['deuteranopia', 'green blind'],
       action() {
         State?.set('colorFilter', 'deuteranopia');
-        speak('Deuteranopia filter active');
+        speak('Deuteranopia green-blind filter active');
       },
     },
     {
-      patterns: ['grayscale'],
+      patterns: ['tritanopia', 'blue blind'],
+      action() {
+        State?.set('colorFilter', 'tritanopia');
+        speak('Tritanopia blue-blind filter active');
+      },
+    },
+    {
+      patterns: ['colorblind', 'grayscale', 'monochrome'],
       action() {
         State?.set('colorFilter', 'grayscale');
-        speak('Grayscale mode active');
+        speak('Achromatopsia grayscale mode active');
       },
     },
     {
-      patterns: ['normal color', 'no filter', 'clear filter'],
+      patterns: ['normal color', 'no filter', 'clear filter', 'reset color'],
       action() {
         State?.set('colorFilter', 'none');
-        speak('Color filters cleared');
+        speak('Color filters cleared, full color restored');
+      },
+    },
+    // ── Specialized Typography ─────────────────────────────────────────────
+    {
+      patterns: ['dyslexic', 'dyslexia font', 'opendyslexic'],
+      action() {
+        State?.set('fontFamily', 'dyslexic');
+        speak('OpenDyslexic weighted font enabled');
+      },
+    },
+    {
+      patterns: ['hyperlegible', 'low vision font', 'braille font'],
+      action() {
+        State?.set('fontFamily', 'hyperlegible');
+        speak('Atkinson Hyperlegible low vision font enabled');
+      },
+    },
+    {
+      patterns: ['default typography', 'standard font', 'inter font'],
+      action() {
+        State?.set('fontFamily', 'default');
+        speak('Standard typography restored');
+      },
+    },
+    // ── Reading Ruler ──────────────────────────────────────────────────────
+    {
+      patterns: ['reading ruler', 'ruler on', 'line guide'],
+      action() {
+        State?.set('readingRuler', true);
+        speak('Reading guide ruler activated');
+      },
+    },
+    {
+      patterns: ['ruler off', 'hide ruler', 'disable ruler'],
+      action() {
+        State?.set('readingRuler', false);
+        speak('Reading guide ruler hidden');
       },
     },
     // ── Page reading ───────────────────────────────────────────────────────
     {
-      patterns: ['read page', 'page summary'],
+      patterns: ['read page', 'page summary', 'read summary', 'what is on this page'],
       action() {
         speak(buildPageSummary());
       },
     },
     // ── Inspector ──────────────────────────────────────────────────────────
     {
-      patterns: ['open inspector'],
+      patterns: ['open inspector', 'wcag inspector', 'inspect'],
       action() {
         State?.set('inspectorActive', true);
-        speak('WCAG inspector opened');
+        speak('WCAG 2.1 inspector mode opened');
       },
     },
-    // ── Dialog close ───────────────────────────────────────────────────────
     {
-      patterns: ['close dialog', 'close', 'escape'],
+      patterns: ['close inspector'],
+      action() {
+        State?.set('inspectorActive', false);
+        speak('WCAG inspector closed');
+      },
+    },
+    // ── Dialog / Drawer close ──────────────────────────────────────────────
+    {
+      patterns: ['close dialog', 'close modal', 'close cart', 'dismiss', 'escape'],
       action() {
         document.dispatchEvent(
           new KeyboardEvent('keydown', {
@@ -294,45 +369,66 @@ document.addEventListener('DOMContentLoaded', () => {
             cancelable: true,
           })
         );
-        speak('Dialog closed');
+        speak('Dialog dismissed');
       },
     },
-    // ── Acoustic / sound ───────────────────────────────────────────────────
+    // ── Acoustic / Sound / Masking ─────────────────────────────────────────
     {
-      patterns: ['play sound', 'focus sound'],
+      patterns: ['masking noise', 'rain noise', 'white noise', 'rain sound', 'ambient sound'],
+      action() {
+        window.InclusionKit?.AcousticEngine?.toggleMaskingNoise();
+      },
+    },
+    {
+      patterns: ['play sound', 'focus sound', 'chime'],
       action() {
         window.InclusionKit?.AcousticEngine?.playChime();
-        speak('Focus chime played');
+        speak('Acoustic chime played');
       },
     },
     {
-      patterns: ['mute audio', 'mute'],
+      patterns: ['mute audio', 'mute sound', 'mute'],
       action() {
         State?.set('hapticSound', false);
         speak('Audio muted');
       },
     },
     {
-      patterns: ['unmute audio', 'unmute'],
+      patterns: ['unmute audio', 'unmute sound', 'unmute'],
       action() {
         State?.set('hapticSound', true);
+        window.InclusionKit?.AcousticEngine?.playConfirm();
         speak('Audio enabled');
       },
     },
-    // ── Navigation shortcuts ───────────────────────────────────────────────
+    // ── Navigation & Tools ─────────────────────────────────────────────────
     {
-      patterns: ['open cart'],
+      patterns: ['open cart', 'view cart', 'show cart', 'cart'],
       action() {
         document.getElementById('header-cart-btn')?.click();
-        speak('Cart opened');
+        speak('Shopping cart opened');
+      },
+    },
+    {
+      patterns: ['open toolbar', 'open dock', 'accessibility engine', 'open menu'],
+      action() {
+        document.getElementById('btn-toggle-dock')?.click();
+        speak('Accessibility engine toolbar opened');
+      },
+    },
+    {
+      patterns: ['checkout', 'buy now'],
+      action() {
+        document.getElementById('btn-buy-now')?.click();
+        speak('Opening checkout dialog');
       },
     },
     // ── Help ───────────────────────────────────────────────────────────────
     {
-      patterns: ['help'],
+      patterns: ['help', 'commands', 'what can i say'],
       action() {
         document.querySelector('.btn-open-viva')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        speak('Opening accessibility help guide');
+        speak('Opening accessibility guide and voice command reference');
       },
     },
   ];

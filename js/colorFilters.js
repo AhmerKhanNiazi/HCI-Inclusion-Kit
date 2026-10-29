@@ -87,12 +87,15 @@ window.InclusionKit = window.InclusionKit || {};
     applyContrast(contrastMode) {
       if (contrastMode === 'high') {
         this.root.setAttribute('data-contrast', 'high');
+        this.root.setAttribute('data-high-contrast', 'true');
         State.announce('High Contrast Mode Level AAA activated. Maximum luminance ratio applied.');
       } else if (contrastMode === 'inverted') {
         this.root.setAttribute('data-contrast', 'inverted');
+        this.root.removeAttribute('data-high-contrast');
         State.announce('Inverted Contrast Mode activated.');
       } else {
         this.root.removeAttribute('data-contrast');
+        this.root.removeAttribute('data-high-contrast');
         State.announce('Standard contrast mode restored.');
       }
 

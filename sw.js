@@ -10,44 +10,40 @@ const CACHE_NAME = 'inclusionkit-v1';
 
 /**
  * Assets to pre-cache during the install phase.
- * These are the core app shell files needed to render the app offline.
+ * Relative paths ensure full compatibility across GitHub Pages, custom domains, and local servers.
  */
 const PRE_CACHE_ASSETS = [
-  '/',
-  '/HCI-Inclusion-Kit/',
-  '/HCI-Inclusion-Kit/index.html',
-  '/HCI-Inclusion-Kit/css/style.css',
-  '/HCI-Inclusion-Kit/js/state.js',
-  '/HCI-Inclusion-Kit/js/colorFilters.js',
-  '/HCI-Inclusion-Kit/js/typography.js',
-  '/HCI-Inclusion-Kit/js/visualHaptics.js',
-  '/HCI-Inclusion-Kit/js/wcagInspector.js',
-  '/HCI-Inclusion-Kit/js/ecommerceDemo.js',
-  '/HCI-Inclusion-Kit/js/voiceEngine.js',
-  '/HCI-Inclusion-Kit/js/acousticEngine.js',
-  '/HCI-Inclusion-Kit/js/app.js',
-  '/HCI-Inclusion-Kit/favicon.svg',
-  '/HCI-Inclusion-Kit/manifest.json',
+  './',
+  './index.html',
+  './css/style.css',
+  './js/state.js',
+  './js/colorFilters.js',
+  './js/typography.js',
+  './js/visualHaptics.js',
+  './js/acousticEngine.js',
+  './js/voiceEngine.js',
+  './js/wcagInspector.js',
+  './js/ecommerceDemo.js',
+  './js/app.js',
+  './favicon.svg',
+  './manifest.json',
 ];
 
 // ---------------------------------------------------------------------------
 // INSTALL — Pre-cache the app shell
 // ---------------------------------------------------------------------------
-/**
- * The install event fires when the service worker is first registered or
- * updated. We open (or create) the versioned cache and populate it with
- * all the app-shell assets defined above.
- *
- * `skipWaiting()` forces the new SW to activate immediately rather than
- * waiting for existing clients to close.
- */
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then((cache) => {
+      .then(async (cache) => {
         console.log('[SW] Pre-caching app shell assets...');
-        return cache.addAll(PRE_CACHE_ASSETS);
+        // Use Promise.allSettled so a single missing optional asset never breaks SW installation
+        await Promise.allSettled(
+          PRE_CACHE_ASSETS.map((url) =>
+            cache.add(url).catch((err) => console.warn('[SW] Cache item skipped:', url, err))
+          )
+        );
       })
       .then(() => {
         console.log('[SW] Install complete. Skipping waiting phase.');

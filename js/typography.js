@@ -70,6 +70,10 @@ window.InclusionKit = window.InclusionKit || {};
      */
     applyScale(scaleFactor) {
       this.root.style.setProperty('--font-scale', scaleFactor);
+      let sizeName = 'normal';
+      if (scaleFactor >= 1.5) sizeName = 'xlarge';
+      else if (scaleFactor > 1.0) sizeName = 'large';
+      this.root.setAttribute('data-font-size', sizeName);
       State.announce(`Text scale adjusted to ${Math.round(scaleFactor * 100)} percent.`);
       this.updatePills('data-font-scale', scaleFactor.toString());
     }

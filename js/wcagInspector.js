@@ -109,6 +109,7 @@ window.InclusionKit = window.InclusionKit || {};
     constructor() {
       this.active = false;
       this.popover = null;
+      this.originalVivaContent = null;
       this.init();
     }
 
@@ -230,7 +231,17 @@ window.InclusionKit = window.InclusionKit || {};
       const modalContent = document.getElementById('viva-cheat-content');
       if (!modal || !modalContent) return;
 
+      // Preserve original full viva guide on first inspect
+      if (!this.originalVivaContent) {
+        this.originalVivaContent = modalContent.innerHTML;
+      }
+
       modalContent.innerHTML = `
+        <div class="mb-3">
+          <button type="button" id="btn-restore-full-viva" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-900 font-bold text-xs transition-colors focus-visible:ring-2 focus-visible:ring-sky-500">
+            <span>←</span> Back to Full Viva Cheat Sheet
+          </button>
+        </div>
         <div class="flex items-center gap-3 mb-4">
           <span class="px-3 py-1 text-sm font-black rounded-lg bg-sky-500 text-white">${data.level}</span>
           <h3 class="text-xl font-bold text-slate-900">${data.title}</h3>
@@ -249,11 +260,23 @@ window.InclusionKit = window.InclusionKit || {};
         </div>
       `;
 
+      const backBtn = modalContent.querySelector('#btn-restore-full-viva');
+      if (backBtn) {
+        backBtn.addEventListener('click', () => this.restoreFullViva());
+      }
+
       modal.classList.remove('hidden');
       modal.setAttribute('aria-hidden', 'false');
       // Trap focus
       const closeBtn = modal.querySelector('#viva-modal-close');
       if (closeBtn) closeBtn.focus();
+    }
+
+    restoreFullViva() {
+      const modalContent = document.getElementById('viva-cheat-content');
+      if (modalContent && this.originalVivaContent) {
+        modalContent.innerHTML = this.originalVivaContent;
+      }
     }
 
     updateInspectorButton(isActive) {

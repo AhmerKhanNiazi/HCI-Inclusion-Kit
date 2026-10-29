@@ -74,10 +74,11 @@ html {
 
 /* --------------------------------------------------------------------------
    5. High Contrast Mode (WCAG 1.4.3 & 1.4.6 — Level AAA 7:1+)
-   data-contrast="high" enforces pure black/yellow/white palette.
+   data-contrast="high" / data-high-contrast="true" enforces pure black/yellow/white palette.
    No blurs, no translucency — only solid opaque surfaces.
    -------------------------------------------------------------------------- */
-html[data-contrast="high"] {
+html[data-contrast="high"],
+html[data-high-contrast="true"] {
   --bg-primary: #000000;
   --bg-surface: #0a0a0a;
   --text-primary: #facc15;
@@ -87,7 +88,8 @@ html[data-contrast="high"] {
   --focus-ring-color: #ffffff;
 }
 
-html[data-contrast="high"] body {
+html[data-contrast="high"] body,
+html[data-high-contrast="true"] body {
   background-color: #000000 !important;
   color: #facc15 !important;
 }
@@ -97,9 +99,21 @@ html[data-contrast="high"] header,
 html[data-contrast="high"] footer,
 html[data-contrast="high"] aside,
 html[data-contrast="high"] nav,
+html[data-contrast="high"] #cart-drawer,
 html[data-contrast="high"] [class*="bg-white"],
 html[data-contrast="high"] [class*="bg-slate"],
-html[data-contrast="high"] [class*="bg-sky"] {
+html[data-contrast="high"] [class*="bg-sky"],
+html[data-contrast="high"] [class*="bg-emerald"],
+html[data-high-contrast="true"] .surface-card,
+html[data-high-contrast="true"] header,
+html[data-high-contrast="true"] footer,
+html[data-high-contrast="true"] aside,
+html[data-high-contrast="true"] nav,
+html[data-high-contrast="true"] #cart-drawer,
+html[data-high-contrast="true"] [class*="bg-white"],
+html[data-high-contrast="true"] [class*="bg-slate"],
+html[data-high-contrast="true"] [class*="bg-sky"],
+html[data-high-contrast="true"] [class*="bg-emerald"] {
   background-color: #000000 !important;
   border-color: #facc15 !important;
   color: #facc15 !important;
@@ -112,26 +126,53 @@ html[data-contrast="high"] h4,
 html[data-contrast="high"] p,
 html[data-contrast="high"] span,
 html[data-contrast="high"] label,
-html[data-contrast="high"] li {
+html[data-contrast="high"] li,
+html[data-contrast="high"] dt,
+html[data-contrast="high"] dd,
+html[data-high-contrast="true"] h1,
+html[data-high-contrast="true"] h2,
+html[data-high-contrast="true"] h3,
+html[data-high-contrast="true"] h4,
+html[data-high-contrast="true"] p,
+html[data-high-contrast="true"] span,
+html[data-high-contrast="true"] label,
+html[data-high-contrast="true"] li,
+html[data-high-contrast="true"] dt,
+html[data-high-contrast="true"] dd {
   color: #facc15 !important;
 }
 
 html[data-contrast="high"] button,
-html[data-contrast="high"] [role="button"] {
+html[data-contrast="high"] [role="button"],
+html[data-high-contrast="true"] button,
+html[data-high-contrast="true"] [role="button"] {
   background-color: #000000 !important;
   color: #facc15 !important;
   border: 2px solid #facc15 !important;
 }
 
 html[data-contrast="high"] button:hover,
-html[data-contrast="high"] [role="button"]:hover {
+html[data-contrast="high"] [role="button"]:hover,
+html[data-high-contrast="true"] button:hover,
+html[data-high-contrast="true"] [role="button"]:hover {
   background-color: #facc15 !important;
+  color: #000000 !important;
+}
+
+/* Ensure all child spans/texts inside hovered buttons turn black */
+html[data-contrast="high"] button:hover *,
+html[data-contrast="high"] [role="button"]:hover *,
+html[data-high-contrast="true"] button:hover *,
+html[data-high-contrast="true"] [role="button"]:hover * {
   color: #000000 !important;
 }
 
 html[data-contrast="high"] input,
 html[data-contrast="high"] select,
-html[data-contrast="high"] textarea {
+html[data-contrast="high"] textarea,
+html[data-high-contrast="true"] input,
+html[data-high-contrast="true"] select,
+html[data-high-contrast="true"] textarea {
   background-color: #000000 !important;
   color: #facc15 !important;
   border: 2px solid #facc15 !important;
@@ -141,7 +182,11 @@ html[data-contrast="high"] textarea {
 html[data-contrast="high"] [class*="backdrop-blur"],
 html[data-contrast="high"] [class*="bg-opacity"],
 html[data-contrast="high"] [class*="bg-white/"],
-html[data-contrast="high"] [class*="bg-slate/"] {
+html[data-contrast="high"] [class*="bg-slate/"],
+html[data-high-contrast="true"] [class*="backdrop-blur"],
+html[data-high-contrast="true"] [class*="bg-opacity"],
+html[data-high-contrast="true"] [class*="bg-white/"],
+html[data-high-contrast="true"] [class*="bg-slate/"] {
   backdrop-filter: none !important;
   background-color: #000000 !important;
 }
