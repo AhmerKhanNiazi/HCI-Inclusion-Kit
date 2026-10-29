@@ -322,7 +322,73 @@ window.InclusionKit = window.InclusionKit || {};
           const vivaBtn = document.querySelector('.btn-open-viva');
           if (vivaBtn) vivaBtn.click();
         }
+
+        // ====================================================================
+        // WCAG 2.1 AAA Single-Key Switch Access Shortcuts
+        // Only active when not typing inside an input, textarea, or select
+        // ====================================================================
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+        const isEditing = activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select' || document.activeElement?.isContentEditable;
+        if (!isEditing && !e.altKey && !e.ctrlKey && !e.metaKey) {
+          const key = e.key.toLowerCase();
+          
+          // 'v' -> Toggle Voice Assistant
+          if (key === 'v') {
+            e.preventDefault();
+            if (window.InclusionKit.VoiceEngine && typeof window.InclusionKit.VoiceEngine.toggleListening === 'function') {
+              window.InclusionKit.VoiceEngine.toggleListening();
+            } else {
+              document.getElementById('btn-voice-toggle')?.click();
+            }
+          }
+
+          // 'c' -> Toggle High Contrast
+          if (key === 'c') {
+            e.preventDefault();
+            const cur = State.get('contrastMode');
+            const next = cur === 'high' ? 'normal' : 'high';
+            State.set('contrastMode', next);
+            if (window.InclusionKit.AcousticEngine) {
+              window.InclusionKit.AcousticEngine.playConfirm();
+            }
+            if (window.InclusionKit.VoiceEngine) {
+              window.InclusionKit.VoiceEngine.speak(next === 'high' ? 'High contrast mode enabled' : 'Normal contrast restored');
+            }
+          }
+
+          // 'f' -> Cycle Font Scale
+          if (key === 'f') {
+            e.preventDefault();
+            const scales = [1.0, 1.25, 1.5];
+            const curScale = State.get('fontScale') || 1.0;
+            const nextIdx = (scales.indexOf(curScale) + 1) % scales.length;
+            const nextScale = scales[nextIdx];
+            State.set('fontScale', nextScale);
+            if (window.InclusionKit.AcousticEngine) {
+              window.InclusionKit.AcousticEngine.playChime();
+            }
+            if (window.InclusionKit.VoiceEngine) {
+              window.InclusionKit.VoiceEngine.speak(`Font scaled to ${Math.round(nextScale * 100)} percent`);
+            }
+          }
+
+          // '?' -> Open Accessibility & Voice Guide
+          if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+            e.preventDefault();
+            const vivaBtn = document.querySelector('.btn-open-viva');
+            if (vivaBtn) vivaBtn.click();
+          }
+        }
       });
+
+      // Register Service Worker for offline PWA capability
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('[PWA] Service Worker registered with scope:', reg.scope))
+            .catch(err => console.warn('[PWA] Service Worker registration failed:', err));
+        });
+      }
     }
 
     /**

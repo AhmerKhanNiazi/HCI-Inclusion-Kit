@@ -1,38 +1,33 @@
 /* ==========================================================================
-   INCLUSIONKIT - Core Accessibility & Visual Haptic Styling
+   INCLUSIONKIT v2.0 - Core Accessibility & Visual Haptic Styling
    WCAG 2.1 Level AA & AAA Conformance Support
    Topic 3: Inclusive Design | Topic 8: Visual Haptic & Tactile Emulation
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
    1. Typography Imports
-   - OpenDyslexic: Weighted bottoms on glyphs reduce rotation and letter inversion
-   - Atkinson Hyperlegible: Braille Institute font optimized for low vision distinction
+   - OpenDyslexic: Weighted bottoms on glyphs reduce rotation/letter inversion
+   - Atkinson Hyperlegible: Braille Institute font for low vision distinction
    -------------------------------------------------------------------------- */
-@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import url('https://fonts.cdnfonts.com/css/open-dyslexic');
 
 /* --------------------------------------------------------------------------
-   2. Root CSS Custom Properties (The Adaptability Engine Tokens)
-   Dynamic values manipulated by JavaScript state
+   2. Root CSS Custom Properties (Adaptability Engine Tokens)
    -------------------------------------------------------------------------- */
 :root {
-  /* Dynamic typography scaling factors (WCAG 1.4.4 Resize Text) */
+  /* Dynamic typography (WCAG 1.4.4 Resize Text) */
   --font-scale: 1;
   --letter-spacing: 0px;
   --word-spacing: 0px;
   --line-height-factor: 1.5;
   --font-family-active: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  /* Focus Indicator tokens (WCAG 2.4.7 Focus Visible & 2.4.11 Focus Appearance) */
-  --focus-ring-color: #0284c7; /* Vibrant Blue default */
+  /* Focus indicators (WCAG 2.4.7 & 2.4.11 Focus Appearance) */
+  --focus-ring-color: #0284c7;
   --focus-ring-width: 3px;
   --focus-ring-offset: 3px;
-  --focus-ring-style: solid;
-
-  /* Visual Haptic feedback tokens (Topic 8: Tactile Emulation) */
   --haptic-pulse-color: rgba(2, 132, 199, 0.45);
-  --haptic-intensity: 1;
 
   /* Theme tokens */
   --bg-primary: #f8fafc;
@@ -41,15 +36,24 @@
   --text-secondary: #475569;
   --border-color: #e2e8f0;
   --accent-color: #0284c7;
-  --accent-hover: #0369a1;
-  --accent-contrast: #ffffff;
 }
 
 /* --------------------------------------------------------------------------
-   3. Dynamic Accessibility Classes (Applied to <html> or <body>)
+   3. WCAG 2.4.11 AAA Focus Appearance — Global High-Visibility Focus Ring
+   Applied to ALL focusable elements site-wide. Yellow ring on dark shadow
+   gives maximum contrast against any background color (luminance-independent).
    -------------------------------------------------------------------------- */
+*:focus-visible {
+  outline: 3px solid #facc15 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.85) !important;
+  border-radius: 4px !important;
+  transition: outline-offset 0.1s ease !important;
+}
 
-/* Typography Overrides */
+/* --------------------------------------------------------------------------
+   4. Typography Override Classes
+   -------------------------------------------------------------------------- */
 html.font-dyslexic,
 html.font-dyslexic * {
   font-family: 'OpenDyslexic', sans-serif !important;
@@ -60,7 +64,6 @@ html.font-hyperlegible * {
   font-family: 'Atkinson Hyperlegible', sans-serif !important;
 }
 
-/* Dynamic Text Scaling without breaking layouts (WCAG 1.4.4 & 1.4.10 Reflow) */
 html {
   font-size: calc(16px * var(--font-scale));
   letter-spacing: var(--letter-spacing);
@@ -70,40 +73,83 @@ html {
 }
 
 /* --------------------------------------------------------------------------
-   4. High Contrast Modes (WCAG 1.4.3 Minimum Contrast & 1.4.6 Enhanced)
+   5. High Contrast Mode (WCAG 1.4.3 & 1.4.6 — Level AAA 7:1+)
+   data-contrast="high" enforces pure black/yellow/white palette.
+   No blurs, no translucency — only solid opaque surfaces.
    -------------------------------------------------------------------------- */
 html[data-contrast="high"] {
   --bg-primary: #000000;
-  --bg-surface: #121212;
-  --text-primary: #ffffff;
-  --text-secondary: #facc15; /* High-visibility yellow */
-  --border-color: #ffffff;
+  --bg-surface: #0a0a0a;
+  --text-primary: #facc15;
+  --text-secondary: #ffffff;
+  --border-color: #facc15;
   --accent-color: #facc15;
-  --accent-hover: #fde047;
-  --accent-contrast: #000000;
-  --focus-ring-color: #facc15;
+  --focus-ring-color: #ffffff;
 }
 
 html[data-contrast="high"] body {
   background-color: #000000 !important;
-  color: #ffffff !important;
-}
-
-html[data-contrast="high"] .surface-card {
-  background-color: #121212 !important;
-  border: 2px solid #ffffff !important;
-  color: #ffffff !important;
-}
-
-html[data-contrast="high"] .text-muted {
   color: #facc15 !important;
 }
 
-/* Inverted Contrast Mode */
+html[data-contrast="high"] .surface-card,
+html[data-contrast="high"] header,
+html[data-contrast="high"] footer,
+html[data-contrast="high"] aside,
+html[data-contrast="high"] nav,
+html[data-contrast="high"] [class*="bg-white"],
+html[data-contrast="high"] [class*="bg-slate"],
+html[data-contrast="high"] [class*="bg-sky"] {
+  background-color: #000000 !important;
+  border-color: #facc15 !important;
+  color: #facc15 !important;
+}
+
+html[data-contrast="high"] h1,
+html[data-contrast="high"] h2,
+html[data-contrast="high"] h3,
+html[data-contrast="high"] h4,
+html[data-contrast="high"] p,
+html[data-contrast="high"] span,
+html[data-contrast="high"] label,
+html[data-contrast="high"] li {
+  color: #facc15 !important;
+}
+
+html[data-contrast="high"] button,
+html[data-contrast="high"] [role="button"] {
+  background-color: #000000 !important;
+  color: #facc15 !important;
+  border: 2px solid #facc15 !important;
+}
+
+html[data-contrast="high"] button:hover,
+html[data-contrast="high"] [role="button"]:hover {
+  background-color: #facc15 !important;
+  color: #000000 !important;
+}
+
+html[data-contrast="high"] input,
+html[data-contrast="high"] select,
+html[data-contrast="high"] textarea {
+  background-color: #000000 !important;
+  color: #facc15 !important;
+  border: 2px solid #facc15 !important;
+}
+
+/* Disable all blurs and translucency in high contrast */
+html[data-contrast="high"] [class*="backdrop-blur"],
+html[data-contrast="high"] [class*="bg-opacity"],
+html[data-contrast="high"] [class*="bg-white/"],
+html[data-contrast="high"] [class*="bg-slate/"] {
+  backdrop-filter: none !important;
+  background-color: #000000 !important;
+}
+
+/* Inverted contrast */
 html[data-contrast="inverted"] {
   filter: invert(100%) hue-rotate(180deg);
 }
-
 html[data-contrast="inverted"] img,
 html[data-contrast="inverted"] video,
 html[data-contrast="inverted"] .no-invert {
@@ -111,29 +157,31 @@ html[data-contrast="inverted"] .no-invert {
 }
 
 /* --------------------------------------------------------------------------
-   5. Topic 8: Visual Haptic & Tactile Emulation System
-   Replaces physical vibration with micro-visual compression & ripple waves
+   6. Colorblind Filter Hooks (WCAG 1.4.1 — Applied via SVG matrices)
+   -------------------------------------------------------------------------- */
+html.filter-protanopia   { filter: url('#filter-protanopia')   !important; }
+html.filter-deuteranopia { filter: url('#filter-deuteranopia') !important; }
+html.filter-tritanopia   { filter: url('#filter-tritanopia')   !important; }
+html.filter-grayscale    { filter: url('#filter-achromatopsia')!important; }
+
+/* --------------------------------------------------------------------------
+   7. Topic 8: Visual Haptic & Tactile Emulation
    -------------------------------------------------------------------------- */
 
-/* Custom Focus Ring Indicator (WCAG 2.4.7 Focus Visible) */
-:focus-visible {
-  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color) !important;
-  outline-offset: var(--focus-ring-offset) !important;
-  border-radius: 4px;
-  transition: outline-offset 0.15s ease;
+/* Spring compression (mechanical key travel simulation) */
+.tactile-bump {
+  animation: tactile-spring 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
 }
 
-/* When Enhanced Focus is active */
-html.enhanced-focus :focus-visible {
-  box-shadow: 0 0 0 6px var(--haptic-pulse-color) !important;
-  animation: haptic-focus-throb 1.2s infinite alternate ease-in-out;
+@keyframes tactile-spring {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(0.94); }
+  80%  { transform: scale(1.03); }
+  100% { transform: scale(1); }
 }
 
-/* Haptic Tactile Shockwave / Ripple (simulating physical button depression) */
-.haptic-active {
-  position: relative;
-  overflow: hidden;
-}
+/* Ripple wave dispersion (surface acoustic wave simulation) */
+.haptic-active { position: relative; overflow: hidden; }
 
 .haptic-ripple {
   position: absolute;
@@ -144,53 +192,13 @@ html.enhanced-focus :focus-visible {
   animation: haptic-ripple-expand 0.45s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
 }
 
-/* Keyframe Animations for Tactile Micro-Interactions */
 @keyframes haptic-ripple-expand {
-  0% {
-    transform: scale(0);
-    opacity: 0.9;
-  }
-  50% {
-    opacity: 0.6;
-  }
-  100% {
-    transform: scale(2.8);
-    opacity: 0;
-  }
+  0%   { transform: scale(0);   opacity: 0.9; }
+  50%  {                        opacity: 0.6; }
+  100% { transform: scale(2.8); opacity: 0; }
 }
 
-@keyframes haptic-focus-throb {
-  0% {
-    outline-color: var(--focus-ring-color);
-    outline-offset: var(--focus-ring-offset);
-  }
-  100% {
-    outline-color: #38bdf8;
-    outline-offset: calc(var(--focus-ring-offset) + 2px);
-  }
-}
-
-/* Visual Tactile Bump (Compression/Spring release on tap/click) */
-.tactile-bump {
-  animation: tactile-spring 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-}
-
-@keyframes tactile-spring {
-  0% {
-    transform: scale(1);
-  }
-  40% {
-    transform: scale(0.94);
-  }
-  80% {
-    transform: scale(1.03);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-/* Boundary Collision Haptic (Visual flash at screen edges when reaching limits) */
+/* Boundary collision flash (tactile resistance simulation) */
 .haptic-screen-flash {
   position: fixed;
   inset: 0;
@@ -202,19 +210,29 @@ html.enhanced-focus :focus-visible {
 }
 
 @keyframes flash-fade {
-  0% { opacity: 1; }
+  0%   { opacity: 1; }
   100% { opacity: 0; }
 }
 
+/* Pulsing focus glow (WCAG 2.4.11 enhanced indicator) */
+html.enhanced-focus *:focus-visible {
+  animation: haptic-focus-throb 1.2s infinite alternate ease-in-out;
+}
+
+@keyframes haptic-focus-throb {
+  0%   { outline-offset: 3px; }
+  100% { outline-offset: 6px; }
+}
+
 /* --------------------------------------------------------------------------
-   6. Reading Guide Ruler (Assists users with ADHD / Dyslexia / Tracking issues)
+   8. Reading Guide Ruler (ADHD / Dyslexia / Line Tracking Assistance)
    -------------------------------------------------------------------------- */
 #reading-ruler {
   position: fixed;
   left: 0;
   right: 0;
   height: 38px;
-  background: rgba(254, 240, 138, 0.28); /* Warm yellow tint */
+  background: rgba(254, 240, 138, 0.28);
   border-top: 2px dashed rgba(202, 138, 4, 0.7);
   border-bottom: 2px dashed rgba(202, 138, 4, 0.7);
   pointer-events: none;
@@ -222,11 +240,11 @@ html.enhanced-focus :focus-visible {
   display: none;
   transform: translateY(-50%);
   transition: top 0.05s ease-out;
-  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.08); /* Mask surrounding lines */
+  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.08);
 }
 
 /* --------------------------------------------------------------------------
-   7. Reduced Motion Mode (WCAG 2.3.3 Animation from Interactions)
+   9. WCAG 2.3.3 Reduced Motion Mode — Suppress all decorative animations
    -------------------------------------------------------------------------- */
 html.reduced-motion *,
 html.reduced-motion *::before,
@@ -238,83 +256,94 @@ html.reduced-motion *::after {
 }
 
 /* --------------------------------------------------------------------------
-   8. Colorblind Simulation CSS Filter Hooks (Applying SVG matrices)
-   -------------------------------------------------------------------------- */
-html.filter-protanopia {
-  filter: url('#filter-protanopia') !important;
-}
-
-html.filter-deuteranopia {
-  filter: url('#filter-deuteranopia') !important;
-}
-
-html.filter-tritanopia {
-  filter: url('#filter-tritanopia') !important;
-}
-
-html.filter-grayscale {
-  filter: url('#filter-achromatopsia') !important;
-}
-
-/* --------------------------------------------------------------------------
-   9. Skip Links & Accessibility Utility Classes (WCAG 2.4.1 Bypass Blocks)
+   10. WCAG 2.4.1 Skip Link (Bypass Blocks — Level A)
    -------------------------------------------------------------------------- */
 .skip-link {
   position: absolute;
   top: -999px;
   left: 1rem;
   background: #0f172a;
-  color: #38bdf8;
+  color: #facc15;
   padding: 0.75rem 1.25rem;
-  border: 2px solid #38bdf8;
+  border: 2px solid #facc15;
   border-radius: 0.5rem;
   font-weight: 700;
+  font-size: 0.875rem;
   z-index: 100000;
-  transition: top 0.2s ease-in-out;
+  transition: top 0.15s ease-in-out;
+  text-decoration: none;
+}
+.skip-link:focus { top: 1rem; }
+
+/* --------------------------------------------------------------------------
+   11. Screen-Reader Only Utility
+   -------------------------------------------------------------------------- */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
 
-.skip-link:focus {
-  top: 1rem;
+/* --------------------------------------------------------------------------
+   12. Voice Control Panel Styles
+   -------------------------------------------------------------------------- */
+#voice-listening-badge {
+  animation: voice-pulse 1.5s ease-in-out infinite;
 }
 
-/* WCAG Inspector Hotspot Pins */
-.wcag-inspect-target {
-  position: relative;
-  transition: all 0.2s ease;
+@keyframes voice-pulse {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(1.05); }
 }
 
+#voice-transcript-panel {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Voice mic button active state */
+#btn-voice-toggle[data-active="true"] {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.3);
+  animation: voice-pulse 1.2s ease-in-out infinite;
+}
+
+/* --------------------------------------------------------------------------
+   13. Masking Noise Toggle Button Active State
+   -------------------------------------------------------------------------- */
+#btn-masking-noise[aria-pressed="true"] {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+}
+
+/* --------------------------------------------------------------------------
+   14. WCAG Inspector Highlight
+   -------------------------------------------------------------------------- */
 html.inspector-active .wcag-inspect-target {
   cursor: help !important;
 }
-
 html.inspector-active .wcag-inspect-target:hover {
   outline: 2px dashed #0284c7 !important;
   outline-offset: 3px !important;
 }
 
-.wcag-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.68rem;
-  font-weight: 800;
-  padding: 0.15rem 0.45rem;
-  border-radius: 9999px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
+/* --------------------------------------------------------------------------
+   15. Dock Scrollbar Styling
+   -------------------------------------------------------------------------- */
+.dock-scroll::-webkit-scrollbar { width: 6px; }
+.dock-scroll::-webkit-scrollbar-track { background: transparent; }
+.dock-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.dock-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-/* Floating Dock Scrollbar styling */
-.dock-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-.dock-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-.dock-scroll::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
-}
-.dock-scroll::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+/* --------------------------------------------------------------------------
+   16. Smooth Badge Transition
+   -------------------------------------------------------------------------- */
+#cart-counter-badge {
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }

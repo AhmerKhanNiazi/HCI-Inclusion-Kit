@@ -1,0 +1,32 @@
+{
+  "name": "InclusionKit — Inclusive Design & Visual Haptic Platform",
+  "short_name": "InclusionKit",
+  "description": "HCI Topic 3 (Inclusive Design for Accessibility) & Topic 8 (Visual Haptic & Tactile Emulation). WCAG 2.1 AAA compliant demonstration platform.",
+  "start_url": "/HCI-Inclusion-Kit/",
+  "scope": "/HCI-Inclusion-Kit/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0284c7",
+  "lang": "en",
+  "dir": "ltr",
+  "orientation": "any",
+  "categories": ["education", "productivity", "accessibility"],
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Open Accessibility Engine",
+      "short_name": "A11y Engine",
+      "description": "Open the Adaptability Engine dock",
+      "url": "/HCI-Inclusion-Kit/#dock",
+      "icons": [{ "src": "favicon.svg", "sizes": "any" }]
+    }
+  ]
+}
