@@ -392,3 +392,34 @@ html.inspector-active .wcag-inspect-target:hover {
 #cart-counter-badge {
   transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+
+/* --------------------------------------------------------------------------
+   17. Hover-to-Read Mode (Point to Speak / Screen Reader Cursor)
+   -------------------------------------------------------------------------- */
+body.hover-read-active {
+  cursor: help !important;
+}
+
+body.hover-read-active a,
+body.hover-read-active button,
+body.hover-read-active [role="button"],
+body.hover-read-active [role="tab"],
+body.hover-read-active [role="radio"] {
+  cursor: help !important;
+}
+
+.hover-read-target {
+  outline: 3px dashed #0284c7 !important;
+  outline-offset: 4px !important;
+  background-color: rgba(2, 132, 199, 0.12) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 0 14px rgba(2, 132, 199, 0.35) !important;
+  transition: outline 0.12s ease, background-color 0.12s ease !important;
+}
+
+html[data-contrast="high"] .hover-read-target,
+html[data-high-contrast="true"] .hover-read-target {
+  outline: 3px dashed #facc15 !important;
+  background-color: rgba(250, 204, 21, 0.25) !important;
+  color: #ffffff !important;
+}

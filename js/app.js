@@ -362,6 +362,13 @@ window.InclusionKit = window.InclusionKit || {};
           if (vivaBtn) vivaBtn.click();
         }
 
+        // Escape: Dismiss any active Hover-to-Read mode
+        if (e.key === 'Escape') {
+          if (window.InclusionKit.VoiceEngine && window.InclusionKit.VoiceEngine.isHoverReadMode) {
+            window.InclusionKit.VoiceEngine.disableHoverRead();
+          }
+        }
+
         // ====================================================================
         // WCAG 2.1 AAA Single-Key Switch Access Shortcuts
         // Only active when not typing inside an input, textarea, or select

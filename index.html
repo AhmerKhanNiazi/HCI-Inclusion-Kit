@@ -218,6 +218,25 @@
         </p>
       </div>
     </div>
+
+    <!-- Hover-to-Read (Point to Speak) Floating Status Pill -->
+    <div id="hover-read-badge" 
+         class="hidden pointer-events-auto mt-2 bg-slate-950/95 backdrop-blur-md text-white p-3 rounded-2xl shadow-2xl border-2 border-sky-400 flex items-center justify-between gap-3 text-xs"
+         role="status"
+         aria-live="polite">
+      <div class="flex items-center gap-2.5">
+        <span class="text-base">📖</span>
+        <div>
+          <span class="font-extrabold text-sky-400 uppercase tracking-wider text-[10px] block">Hover-to-Read Active</span>
+          <span class="text-[11px] text-slate-300">Point cursor at any text or button</span>
+        </div>
+      </div>
+      <button type="button" 
+              id="btn-stop-hover-read" 
+              class="px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-500 text-[10px] font-black text-white uppercase tracking-wider shadow">
+        Exit
+      </button>
+    </div>
   </aside>
 
   <!-- ======================================================================
@@ -806,6 +825,16 @@
 
             <div class="flex items-center justify-between">
               <div>
+                <span class="block text-xs font-bold text-slate-900">Hover-to-Read (Point to Speak)</span>
+                <span class="text-[10px] text-slate-500">Speaks out whatever element you point at</span>
+              </div>
+              <button type="button" id="toggle-hover-read" role="switch" aria-checked="false" class="w-11 h-6 bg-slate-300 rounded-full p-1 transition-colors focus-visible:ring-2 focus-visible:ring-sky-500">
+                <span class="toggle-indicator block w-4 h-4 bg-white rounded-full shadow transition-transform"></span>
+              </button>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div>
                 <span class="block text-xs font-bold text-slate-900">Reduced Motion Mode</span>
                 <span class="text-[10px] text-slate-500">WCAG 2.3.3 (Suppress animation)</span>
               </div>
@@ -1156,28 +1185,36 @@
           </p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <div class="p-2.5 bg-white rounded-lg border border-emerald-200">
-              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Enable high contrast" / "Normal"</span>
-              <span class="text-slate-600 text-[11px]">Enforces 18:1 AAA solid contrast / normal mode</span>
+              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Enable read mode" / "Stop reading"</span>
+              <span class="text-slate-600 text-[11px]">Hover over any text/button/price to hear it spoken</span>
             </div>
             <div class="p-2.5 bg-white rounded-lg border border-emerald-200">
-              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Increase font" / "Reset font"</span>
-              <span class="text-slate-600 text-[11px]">Cycles zoom up to 150% without horizontal reflow</span>
+              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Scroll down / up / to top"</span>
+              <span class="text-slate-600 text-[11px]">Hands-free viewport scrolling & section jumping</span>
             </div>
             <div class="p-2.5 bg-white rounded-lg border border-emerald-200">
-              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Colorblind" / "Grayscale"</span>
-              <span class="text-slate-600 text-[11px]">Applies live SVG color vision deficiency filters</span>
+              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Select black / white / orange / blue"</span>
+              <span class="text-slate-600 text-[11px]">Voice triggers accessible color variant swatches</span>
             </div>
             <div class="p-2.5 bg-white rounded-lg border border-emerald-200">
-              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Read page summary"</span>
-              <span class="text-slate-600 text-[11px]">TTS reads clean semantic summary of current screen</span>
+              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Increase quantity" / "Quantity 1 to 5"</span>
+              <span class="text-slate-600 text-[11px]">Controls tactile stepper & boundary constraints</span>
             </div>
             <div class="p-2.5 bg-white rounded-lg border border-emerald-200">
-              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Play sound" / "Mute audio"</span>
-              <span class="text-slate-600 text-[11px]">Controls procedural Web Audio acoustic chimes</span>
+              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Add to cart" / "Open cart" / "Checkout"</span>
+              <span class="text-slate-600 text-[11px]">Full accessible shopping & purchasing flow</span>
             </div>
             <div class="p-2.5 bg-white rounded-lg border border-emerald-200">
-              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Open cart" / "Close dialog"</span>
-              <span class="text-slate-600 text-[11px]">Hands-free drawer and modal control</span>
+              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "High contrast" / "Dyslexic font"</span>
+              <span class="text-slate-600 text-[11px]">Solid 18:1 contrast, zoom & neurodiverse typography</span>
+            </div>
+            <div class="p-2.5 bg-white rounded-lg border border-emerald-200">
+              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "What is the price" / "What are reviews"</span>
+              <span class="text-slate-600 text-[11px]">Spoken pricing, discount breakdown & review ratings</span>
+            </div>
+            <div class="p-2.5 bg-white rounded-lg border border-emerald-200">
+              <span class="font-bold text-emerald-900 block mb-0.5">🗣️ "Stop speaking" / "Silence"</span>
+              <span class="text-slate-600 text-[11px]">Instant speech synthesis mute & command dismissal</span>
             </div>
           </div>
           <div class="p-2.5 bg-emerald-100/70 rounded-lg text-[11px] text-emerald-900 font-semibold flex items-center justify-between">

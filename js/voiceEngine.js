@@ -41,6 +41,15 @@ document.addEventListener('DOMContentLoaded', () => {
   /** @type {boolean} Whether system TTS is currently speaking aloud. */
   let isSpeakingTTS = false;
 
+  /** @type {boolean} Whether hover-to-read (point-to-speak) mode is active. */
+  let isHoverReadMode = false;
+
+  /** @type {number|null} Timer ID for debounced hover reading. */
+  let hoverReadTimer = null;
+
+  /** @type {HTMLElement|null} Currently highlighted element under mouse cursor. */
+  let currentHoveredEl = null;
+
   /** @type {boolean} Whether the browser supports SpeechRecognition. */
   const isSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 
@@ -219,7 +228,202 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ─────────────────────────────────────────────────────────────────────────
-   * 7. Command parser
+   * 6.1 Hover-to-Read (Point to Speak / Screen Reader Cursor Engine)
+   * ───────────────────────────────────────────────────────────────────────── */
+
+  /**
+   * Extracts clean, natural screen-reader text from an inspected DOM element.
+   * Prioritises ARIA semantics, button labels, images, headings, and prices.
+   *
+   * @param {HTMLElement} el - Target DOM element.
+   * @returns {string} Natural text representation to speak aloud.
+   */
+  function extractReadableContent(el) {
+    if (!el || !(el instanceof HTMLElement)) return '';
+
+    // Check aria-label first
+    const ariaLabel = el.getAttribute('aria-label');
+    if (ariaLabel) {
+      if (el.tagName === 'BUTTON' || el.getAttribute('role') === 'button') {
+        return /button/i.test(ariaLabel) ? ariaLabel : `${ariaLabel}, button`;
+      }
+      return ariaLabel;
+    }
+
+    // Check image
+    if (el.tagName === 'IMG') {
+      const alt = el.getAttribute('alt');
+      return alt ? `Image: ${alt}` : 'Image';
+    }
+
+    // Check form inputs & selects
+    if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+      const label = document.querySelector(`label[for="${el.id}"]`)?.textContent?.trim() || el.placeholder || 'Input field';
+      return `${label}, current value: ${el.value || 'empty'}`;
+    }
+
+    // Check headings
+    if (/^H[1-6]$/i.test(el.tagName)) {
+      return `Heading: ${el.textContent.trim()}`;
+    }
+
+    // Check buttons
+    if (el.tagName === 'BUTTON' || el.getAttribute('role') === 'button') {
+      const txt = el.textContent.trim().replace(/\s+/g, ' ');
+      return /button/i.test(txt) ? txt : `${txt}, button`;
+    }
+
+    // Check links
+    if (el.tagName === 'A') {
+      const txt = el.textContent.trim().replace(/\s+/g, ' ');
+      return `${txt}, link`;
+    }
+
+    // Check tabs
+    if (el.getAttribute('role') === 'tab') {
+      return `${el.textContent.trim()}, tab`;
+    }
+
+    // Check radio swatches
+    if (el.getAttribute('role') === 'radio') {
+      return `${el.textContent.trim()}, color swatch`;
+    }
+
+    // General text
+    const text = el.textContent.trim().replace(/\s+/g, ' ');
+    if (text.length > 250) {
+      const firstSentence = text.split(/[.?!]/)[0];
+      return firstSentence && firstSentence.length > 20 ? firstSentence + '.' : text.slice(0, 180) + '...';
+    }
+    return text;
+  }
+
+  /**
+   * Mouseover listener for Hover-to-Read mode. Debounces speech by 250ms.
+   */
+  function handleHoverRead(e) {
+    if (!isHoverReadMode) return;
+
+    // Ignore events inside control docks or voice badges
+    if (e.target.closest('#voice-listening-badge, #hover-read-badge, #btn-voice-toggle, #accessibility-dock')) {
+      return;
+    }
+
+    const target = e.target.closest(
+      'h1, h2, h3, h4, h5, h6, p, button, a, label, input, select, li, [role="radio"], [role="tab"], [role="button"], img, .surface-card, .wcag-inspect-target'
+    );
+
+    if (!target || target === currentHoveredEl) return;
+
+    if (currentHoveredEl) {
+      currentHoveredEl.classList.remove('hover-read-target');
+    }
+
+    currentHoveredEl = target;
+    target.classList.add('hover-read-target');
+
+    if (hoverReadTimer) clearTimeout(hoverReadTimer);
+    hoverReadTimer = setTimeout(() => {
+      if (!isHoverReadMode || currentHoveredEl !== target) return;
+      const speech = extractReadableContent(target);
+      if (speech && speech.length > 1) {
+        speak(speech);
+      }
+    }, 250);
+  }
+
+  /**
+   * Mouseout listener for Hover-to-Read mode. Clears highlight and pending utterance.
+   */
+  function handleHoverReadLeave(e) {
+    if (!isHoverReadMode) return;
+    if (e.target === currentHoveredEl) {
+      currentHoveredEl.classList.remove('hover-read-target');
+      currentHoveredEl = null;
+      if (hoverReadTimer) clearTimeout(hoverReadTimer);
+    }
+  }
+
+  /**
+   * Enables Hover-to-Read mode.
+   */
+  function enableHoverRead() {
+    if (isHoverReadMode) return;
+    isHoverReadMode = true;
+    document.body.classList.add('hover-read-active');
+
+    const badge = document.getElementById('hover-read-badge');
+    if (badge) {
+      badge.classList.remove('hidden');
+      badge.setAttribute('aria-hidden', 'false');
+    }
+
+    const dockSwitch = document.getElementById('toggle-hover-read');
+    if (dockSwitch) {
+      dockSwitch.setAttribute('aria-checked', 'true');
+      dockSwitch.classList.add('bg-sky-600');
+      dockSwitch.classList.remove('bg-slate-300');
+      dockSwitch.querySelector('.toggle-indicator')?.classList.add('translate-x-5');
+    }
+
+    document.addEventListener('mouseover', handleHoverRead, { passive: true });
+    document.addEventListener('mouseout', handleHoverReadLeave, { passive: true });
+
+    speak('Hover to read mode activated. Move your mouse over any element to hear it spoken.');
+    ariaAnnounce('Hover to read mode activated. Point cursor at any element to hear it.');
+  }
+
+  /**
+   * Disables Hover-to-Read mode.
+   */
+  function disableHoverRead() {
+    if (!isHoverReadMode) return;
+    isHoverReadMode = false;
+    document.body.classList.remove('hover-read-active');
+
+    if (currentHoveredEl) {
+      currentHoveredEl.classList.remove('hover-read-target');
+      currentHoveredEl = null;
+    }
+    if (hoverReadTimer) {
+      clearTimeout(hoverReadTimer);
+      hoverReadTimer = null;
+    }
+
+    const badge = document.getElementById('hover-read-badge');
+    if (badge) {
+      badge.classList.add('hidden');
+      badge.setAttribute('aria-hidden', 'true');
+    }
+
+    const dockSwitch = document.getElementById('toggle-hover-read');
+    if (dockSwitch) {
+      dockSwitch.setAttribute('aria-checked', 'false');
+      dockSwitch.classList.remove('bg-sky-600');
+      dockSwitch.classList.add('bg-slate-300');
+      dockSwitch.querySelector('.toggle-indicator')?.classList.remove('translate-x-5');
+    }
+
+    document.removeEventListener('mouseover', handleHoverRead);
+    document.removeEventListener('mouseout', handleHoverReadLeave);
+
+    speak('Hover to read mode deactivated.');
+    ariaAnnounce('Hover to read mode deactivated.');
+  }
+
+  /**
+   * Toggles Hover-to-Read mode on or off.
+   */
+  function toggleHoverRead() {
+    if (isHoverReadMode) {
+      disableHoverRead();
+    } else {
+      enableHoverRead();
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+   * 7. Command parser & Comprehensive Command Dictionary
    * ───────────────────────────────────────────────────────────────────────── */
 
   /**
@@ -229,14 +433,279 @@ document.addEventListener('DOMContentLoaded', () => {
    */
 
   /**
-   * Ordered list of recognised voice commands.
+   * Comprehensive list of recognised voice commands controlling the entire web.
    * Matching uses fuzzy substring detection (case-insensitive).
-   * The first matching command wins.
    *
    * @type {VoiceCommand[]}
    */
   const COMMANDS = [
-    // ── Contrast ──────────────────────────────────────────────────────────
+    // ── 1. Hover-to-Read Mode (Point to Speak) ─────────────────────────────
+    {
+      patterns: [
+        'read mode',
+        'start reading',
+        'enable read mode',
+        'hover to read',
+        'read on hover',
+        'point to speak',
+        'screen reader mode',
+        'hover read',
+      ],
+      action() {
+        enableHoverRead();
+      },
+    },
+    {
+      patterns: [
+        'stop reading',
+        'stop read mode',
+        'disable read mode',
+        'exit read mode',
+        'turn off read mode',
+        'disable hover',
+      ],
+      action() {
+        disableHoverRead();
+      },
+    },
+
+    // ── 2. Speech Control (Silence / Stop Talking) ─────────────────────────
+    {
+      patterns: [
+        'stop speaking',
+        'stop talking',
+        'silence',
+        'quiet',
+        'shut up',
+        'pause speech',
+      ],
+      action() {
+        if (window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+        }
+        isSpeakingTTS = false;
+      },
+    },
+
+    // ── 3. Page Scrolling & Viewport Navigation ────────────────────────────
+    {
+      patterns: ['scroll down', 'page down', 'go down', 'move down'],
+      action() {
+        window.scrollBy({ top: 450, behavior: 'smooth' });
+        speak('Scrolling down');
+      },
+    },
+    {
+      patterns: ['scroll up', 'page up', 'go up', 'move up'],
+      action() {
+        window.scrollBy({ top: -450, behavior: 'smooth' });
+        speak('Scrolling up');
+      },
+    },
+    {
+      patterns: ['scroll to top', 'go to top', 'top of page', 'back to top'],
+      action() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        speak('Scrolled to top of page');
+      },
+    },
+    {
+      patterns: ['scroll to bottom', 'go to bottom', 'bottom of page', 'go to footer'],
+      action() {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        speak('Scrolled to bottom of page');
+      },
+    },
+
+    // ── 4. Section & Tab Navigation ─────────────────────────────────────────
+    {
+      patterns: ['go to product', 'show product', 'view product', 'product showcase'],
+      action() {
+        document.querySelector('main')?.scrollIntoView({ behavior: 'smooth' });
+        speak('Viewing AuraPulse Max headphone showcase');
+      },
+    },
+    {
+      patterns: ['go to specs', 'show specs', 'specifications', 'specs tab'],
+      action() {
+        const tab = document.getElementById('tab-specs');
+        tab?.click();
+        tab?.scrollIntoView({ behavior: 'smooth' });
+        speak('Technical specifications displayed');
+      },
+    },
+    {
+      patterns: ['go to accessibility', 'show accessibility', 'accessibility tab', 'inclusive features'],
+      action() {
+        const tab = document.getElementById('tab-accessibility');
+        tab?.click();
+        tab?.scrollIntoView({ behavior: 'smooth' });
+        speak('Accessibility features panel displayed');
+      },
+    },
+    {
+      patterns: ['go to reviews', 'show reviews', 'customer reviews', 'reviews tab'],
+      action() {
+        const tab = document.getElementById('tab-reviews');
+        tab?.click();
+        tab?.scrollIntoView({ behavior: 'smooth' });
+        speak('Customer reviews displayed');
+      },
+    },
+
+    // ── 5. Color Swatch Finishes ───────────────────────────────────────────
+    {
+      patterns: ['select obsidian', 'obsidian', 'select black', 'black color', 'circle color', 'circle shape'],
+      action() {
+        document.querySelector('[data-product-variant="obsidian"]')?.click();
+        speak('Cosmic Obsidian black finish selected');
+      },
+    },
+    {
+      patterns: ['select chalk', 'chalk', 'select white', 'white color', 'square color', 'square shape'],
+      action() {
+        document.querySelector('[data-product-variant="chalk"]')?.click();
+        speak('Alpine Chalk white finish selected');
+      },
+    },
+    {
+      patterns: ['select coral', 'coral', 'select orange', 'orange color', 'triangle color', 'triangle shape'],
+      action() {
+        document.querySelector('[data-product-variant="coral"]')?.click();
+        speak('Coral Sunrise finish selected');
+      },
+    },
+    {
+      patterns: ['select azure', 'azure', 'select blue', 'blue color', 'diamond color', 'diamond shape'],
+      action() {
+        document.querySelector('[data-product-variant="azure"]')?.click();
+        speak('Pacific Azure blue finish selected');
+      },
+    },
+
+    // ── 6. Quantity Steppers & Direct Values ───────────────────────────────
+    {
+      patterns: ['increase quantity', 'add quantity', 'more quantity', 'more items', 'plus one', 'quantity plus', 'add more'],
+      action() {
+        document.getElementById('btn-qty-increase')?.click();
+        const q = document.getElementById('product-qty-input')?.value || '1';
+        speak(`Quantity increased to ${q}`);
+      },
+    },
+    {
+      patterns: ['decrease quantity', 'reduce quantity', 'less quantity', 'reduce items', 'minus one', 'quantity minus', 'less items'],
+      action() {
+        document.getElementById('btn-qty-decrease')?.click();
+        const q = document.getElementById('product-qty-input')?.value || '1';
+        speak(`Quantity decreased to ${q}`);
+      },
+    },
+    {
+      patterns: ['quantity 1', 'quantity one', 'set quantity to 1', 'set quantity to one'],
+      action() {
+        const inp = document.getElementById('product-qty-input');
+        if (inp) {
+          inp.value = '1';
+          inp.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        speak('Quantity set to 1');
+      },
+    },
+    {
+      patterns: ['quantity 2', 'quantity two', 'set quantity to 2', 'set quantity to two'],
+      action() {
+        const inp = document.getElementById('product-qty-input');
+        if (inp) {
+          inp.value = '2';
+          inp.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        speak('Quantity set to 2');
+      },
+    },
+    {
+      patterns: ['quantity 3', 'quantity three', 'set quantity to 3', 'set quantity to three'],
+      action() {
+        const inp = document.getElementById('product-qty-input');
+        if (inp) {
+          inp.value = '3';
+          inp.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        speak('Quantity set to 3');
+      },
+    },
+    {
+      patterns: ['quantity 4', 'quantity four', 'set quantity to 4', 'set quantity to four'],
+      action() {
+        const inp = document.getElementById('product-qty-input');
+        if (inp) {
+          inp.value = '4';
+          inp.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        speak('Quantity set to 4');
+      },
+    },
+    {
+      patterns: ['quantity 5', 'quantity five', 'set quantity to 5', 'set quantity to five', 'maximum quantity'],
+      action() {
+        const inp = document.getElementById('product-qty-input');
+        if (inp) {
+          inp.value = '5';
+          inp.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        speak('Quantity set to 5, which is the maximum limit');
+      },
+    },
+
+    // ── 7. Cart, Checkout & Purchasing ─────────────────────────────────────
+    {
+      patterns: ['add to cart', 'put in cart', 'buy headphone', 'add item', 'purchase'],
+      action() {
+        document.getElementById('btn-add-to-cart')?.click();
+        speak('Added AuraPulse Max to your shopping cart');
+      },
+    },
+    {
+      patterns: ['open cart', 'view cart', 'show cart', 'shopping cart', 'my cart'],
+      action() {
+        document.getElementById('header-cart-btn')?.click();
+        speak('Shopping cart opened');
+      },
+    },
+    {
+      patterns: ['close cart', 'hide cart'],
+      action() {
+        document.getElementById('btn-close-cart')?.click();
+        speak('Cart closed');
+      },
+    },
+    {
+      patterns: ['checkout', 'buy now', 'proceed to checkout', 'open checkout', 'pay now'],
+      action() {
+        document.getElementById('btn-buy-now')?.click();
+        speak('Opening accessible checkout dialog');
+      },
+    },
+    {
+      patterns: ['close checkout', 'cancel checkout'],
+      action() {
+        document.getElementById('btn-close-checkout')?.click();
+        speak('Checkout dialog closed');
+      },
+    },
+    {
+      patterns: ['what is the price', 'read price', 'how much', 'pricing', 'cost'],
+      action() {
+        speak('AuraPulse Max is on sale for 219 dollars, discounted from 299 dollars, saving you 80 dollars or 27 percent.');
+      },
+    },
+    {
+      patterns: ['what are the reviews', 'read reviews', 'rating', 'how many stars'],
+      action() {
+        speak('Rated 4.9 out of 5 stars based on 1,280 verified customer reviews.');
+      },
+    },
+
+    // ── 8. High Contrast (WCAG 1.4.3 & 1.4.6) ──────────────────────────────
     {
       patterns: ['high contrast', 'enable contrast', 'turn on contrast', 'dark contrast', 'dark mode'],
       action() {
@@ -253,9 +722,18 @@ document.addEventListener('DOMContentLoaded', () => {
         speak('Normal contrast restored');
       },
     },
-    // ── Font size ──────────────────────────────────────────────────────────
     {
-      patterns: ['increase font', 'bigger text', 'larger font', 'zoom in', 'larger text'],
+      patterns: ['inverted contrast', 'invert colors', 'invert mode'],
+      action() {
+        State?.set('contrastMode', 'inverted');
+        window.InclusionKit?.AcousticEngine?.playConfirm();
+        speak('Inverted color contrast mode active');
+      },
+    },
+
+    // ── 9. Font Scaling (WCAG 1.4.4) ───────────────────────────────────────
+    {
+      patterns: ['increase font', 'bigger text', 'larger font', 'zoom in', 'larger text', 'bigger font'],
       action() {
         const next = cycleFontScaleUp();
         window.InclusionKit?.AcousticEngine?.playChime();
@@ -278,50 +756,15 @@ document.addEventListener('DOMContentLoaded', () => {
       },
     },
     {
-      patterns: ['reset font', 'normal font', 'default font'],
+      patterns: ['reset font', 'normal font', 'default font size', 'reset zoom'],
       action() {
         State?.set('fontScale', 1.0);
         window.InclusionKit?.AcousticEngine?.playConfirm();
         speak('Font reset to normal 100 percent');
       },
     },
-    // ── Colour filters ─────────────────────────────────────────────────────
-    {
-      patterns: ['protanopia', 'red blind'],
-      action() {
-        State?.set('colorFilter', 'protanopia');
-        speak('Protanopia red-blind simulation active');
-      },
-    },
-    {
-      patterns: ['deuteranopia', 'green blind'],
-      action() {
-        State?.set('colorFilter', 'deuteranopia');
-        speak('Deuteranopia green-blind filter active');
-      },
-    },
-    {
-      patterns: ['tritanopia', 'blue blind'],
-      action() {
-        State?.set('colorFilter', 'tritanopia');
-        speak('Tritanopia blue-blind filter active');
-      },
-    },
-    {
-      patterns: ['colorblind', 'grayscale', 'monochrome'],
-      action() {
-        State?.set('colorFilter', 'grayscale');
-        speak('Achromatopsia grayscale mode active');
-      },
-    },
-    {
-      patterns: ['normal color', 'no filter', 'clear filter', 'reset color'],
-      action() {
-        State?.set('colorFilter', 'none');
-        speak('Color filters cleared, full color restored');
-      },
-    },
-    // ── Specialized Typography ─────────────────────────────────────────────
+
+    // ── 10. Specialized Typography (Topic 3) ────────────────────────────────
     {
       patterns: ['dyslexic', 'dyslexia font', 'opendyslexic'],
       action() {
@@ -337,74 +780,106 @@ document.addEventListener('DOMContentLoaded', () => {
       },
     },
     {
-      patterns: ['default typography', 'standard font', 'inter font'],
+      patterns: ['standard font', 'inter font', 'default typography'],
       action() {
         State?.set('fontFamily', 'default');
         speak('Standard typography restored');
       },
     },
-    // ── Reading Ruler ──────────────────────────────────────────────────────
     {
-      patterns: ['reading ruler', 'ruler on', 'line guide'],
+      patterns: ['letter spacing', 'wide spacing', 'increase spacing'],
+      action() {
+        const cur = State?.get('letterSpacing') || 'normal';
+        const next = cur === 'normal' ? 'wide' : cur === 'wide' ? 'extra' : 'normal';
+        State?.set('letterSpacing', next);
+        speak(`Letter spacing set to ${next}`);
+      },
+    },
+    {
+      patterns: ['line height', 'tall lines', 'increase line height'],
+      action() {
+        const cur = State?.get('lineHeight') || 1.5;
+        const next = cur >= 2.0 ? 1.5 : 2.0;
+        State?.set('lineHeight', next);
+        speak(next === 2.0 ? 'Expanded double line height enabled' : 'Standard line height restored');
+      },
+    },
+
+    // ── 11. Color Vision Deficiency Filters (WCAG 1.4.1) ────────────────────
+    {
+      patterns: ['protanopia', 'red blind', 'protan'],
+      action() {
+        State?.set('colorFilter', 'protanopia');
+        speak('Protanopia red-blind simulation active');
+      },
+    },
+    {
+      patterns: ['deuteranopia', 'green blind', 'deutan'],
+      action() {
+        State?.set('colorFilter', 'deuteranopia');
+        speak('Deuteranopia green-blind filter active');
+      },
+    },
+    {
+      patterns: ['tritanopia', 'blue blind', 'tritan'],
+      action() {
+        State?.set('colorFilter', 'tritanopia');
+        speak('Tritanopia blue-blind filter active');
+      },
+    },
+    {
+      patterns: ['colorblind', 'grayscale', 'monochrome', 'achromatopsia'],
+      action() {
+        State?.set('colorFilter', 'grayscale');
+        speak('Achromatopsia grayscale mode active');
+      },
+    },
+    {
+      patterns: ['normal color', 'no filter', 'clear filter', 'reset color', 'full color'],
+      action() {
+        State?.set('colorFilter', 'none');
+        speak('Color filters cleared, full color restored');
+      },
+    },
+
+    // ── 12. Sensory Aids & Acoustic Masking (Topic 8) ──────────────────────
+    {
+      patterns: ['reading ruler', 'ruler on', 'line guide', 'show ruler'],
       action() {
         State?.set('readingRuler', true);
         speak('Reading guide ruler activated');
       },
     },
     {
-      patterns: ['ruler off', 'hide ruler', 'disable ruler'],
+      patterns: ['ruler off', 'hide ruler', 'disable ruler', 'turn off ruler'],
       action() {
         State?.set('readingRuler', false);
         speak('Reading guide ruler hidden');
       },
     },
-    // ── Page reading ───────────────────────────────────────────────────────
     {
-      patterns: ['read page', 'page summary', 'read summary', 'what is on this page'],
+      patterns: ['focus spotlight', 'spotlight', 'dim background'],
       action() {
-        speak(buildPageSummary());
-      },
-    },
-    // ── Inspector ──────────────────────────────────────────────────────────
-    {
-      patterns: ['open inspector', 'wcag inspector', 'inspect'],
-      action() {
-        State?.set('inspectorActive', true);
-        speak('WCAG 2.1 inspector mode opened');
+        const cur = State?.get('focusSpotlight') || false;
+        State?.set('focusSpotlight', !cur);
+        speak(!cur ? 'Focus spotlight active' : 'Focus spotlight disabled');
       },
     },
     {
-      patterns: ['close inspector'],
-      action() {
-        State?.set('inspectorActive', false);
-        speak('WCAG inspector closed');
-      },
-    },
-    // ── Dialog / Drawer close ──────────────────────────────────────────────
-    {
-      patterns: ['close dialog', 'close modal', 'close cart', 'dismiss', 'escape'],
-      action() {
-        document.dispatchEvent(
-          new KeyboardEvent('keydown', {
-            key: 'Escape',
-            code: 'Escape',
-            keyCode: 27,
-            bubbles: true,
-            cancelable: true,
-          })
-        );
-        speak('Dialog dismissed');
-      },
-    },
-    // ── Acoustic / Sound / Masking ─────────────────────────────────────────
-    {
-      patterns: ['masking noise', 'rain noise', 'white noise', 'rain sound', 'ambient sound'],
+      patterns: ['masking noise', 'rain noise', 'white noise', 'rain sound', 'ambient sound', 'play rain'],
       action() {
         window.InclusionKit?.AcousticEngine?.toggleMaskingNoise();
       },
     },
     {
-      patterns: ['play sound', 'focus sound', 'chime'],
+      patterns: ['stop rain', 'stop noise', 'mute noise', 'turn off rain'],
+      action() {
+        window.InclusionKit?.AcousticEngine?.stopMaskingNoise();
+        speak('Acoustic masking noise stopped');
+      },
+    },
+    {
+      patterns: ['play sound', 'focus sound', 'chime', 'test sound'],
       action() {
         window.InclusionKit?.AcousticEngine?.playChime();
         speak('Acoustic chime played');
@@ -425,12 +900,20 @@ document.addEventListener('DOMContentLoaded', () => {
         speak('Audio enabled');
       },
     },
-    // ── Navigation & Tools ─────────────────────────────────────────────────
+
+    // ── 13. WCAG Inspector & Viva Guide ────────────────────────────────────
     {
-      patterns: ['open cart', 'view cart', 'show cart', 'cart'],
+      patterns: ['open inspector', 'wcag inspector', 'inspect', 'audit'],
       action() {
-        document.getElementById('header-cart-btn')?.click();
-        speak('Shopping cart opened');
+        State?.set('inspectorActive', true);
+        speak('WCAG 2.1 inspector mode opened. Click any element to audit.');
+      },
+    },
+    {
+      patterns: ['close inspector', 'exit inspector', 'stop inspecting'],
+      action() {
+        State?.set('inspectorActive', false);
+        speak('WCAG inspector closed');
       },
     },
     {
@@ -441,18 +924,38 @@ document.addEventListener('DOMContentLoaded', () => {
       },
     },
     {
-      patterns: ['checkout', 'buy now'],
+      patterns: ['close toolbar', 'close dock', 'close menu'],
       action() {
-        document.getElementById('btn-buy-now')?.click();
-        speak('Opening checkout dialog');
+        document.getElementById('btn-close-dock')?.click();
+        speak('Accessibility toolbar closed');
       },
     },
-    // ── Help ───────────────────────────────────────────────────────────────
     {
-      patterns: ['help', 'commands', 'what can i say'],
+      patterns: ['help', 'commands', 'what can i say', 'viva', 'cheat sheet', 'examiner guide'],
       action() {
         document.querySelector('.btn-open-viva')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        speak('Opening accessibility guide and voice command reference');
+        speak('Opening accessibility guide and full voice command reference');
+      },
+    },
+    {
+      patterns: ['close dialog', 'close modal', 'close window', 'dismiss', 'escape', 'cancel'],
+      action() {
+        document.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: 'Escape',
+            code: 'Escape',
+            keyCode: 27,
+            bubbles: true,
+            cancelable: true,
+          })
+        );
+        speak('Dialog dismissed');
+      },
+    },
+    {
+      patterns: ['read page', 'page summary', 'read summary', 'what is on this page'],
+      action() {
+        speak(buildPageSummary());
       },
     },
   ];
@@ -461,19 +964,19 @@ document.addEventListener('DOMContentLoaded', () => {
    * Attempts to match a transcript string against the known command list.
    * Uses case-insensitive substring matching ("fuzzy" intent detection).
    *
-   * @param {string} transcript - Lowercased final transcript from SpeechRecognition.
+   * @param {string} transcript - Spoken transcript from SpeechRecognition.
    * @returns {boolean} `true` if a command was matched and executed, `false` otherwise.
    */
   function parseCommand(transcript) {
-    const lower = transcript.toLowerCase().trim();
+    const clean = transcript.toLowerCase().trim().replace(/[.,?!]+$/, '');
     for (const cmd of COMMANDS) {
-      if (cmd.patterns.some((p) => lower.includes(p))) {
+      if (cmd.patterns.some((p) => clean.includes(p))) {
         cmd.action();
         return true;
       }
     }
-    // No match — inform user.
-    speak("Command not recognised. Say help for a list of commands.");
+    // No match — inform user with hint.
+    speak('Command not recognised. Say help for commands or say read mode to hear elements you hover on.');
     return false;
   }
 
@@ -703,6 +1206,17 @@ document.addEventListener('DOMContentLoaded', () => {
     badgeEl.setAttribute('aria-hidden', 'true');
   }
 
+  // Bind Hover-to-Read exit button and dock toggle switch.
+  const stopHoverBtn = document.getElementById('btn-stop-hover-read');
+  if (stopHoverBtn) {
+    stopHoverBtn.addEventListener('click', disableHoverRead);
+  }
+
+  const dockHoverToggle = document.getElementById('toggle-hover-read');
+  if (dockHoverToggle) {
+    dockHoverToggle.addEventListener('click', toggleHoverRead);
+  }
+
   // Warn if the browser does not support the API.
   if (!isSupported) {
     console.warn('[VoiceEngine] SpeechRecognition is not supported in this browser.');
@@ -746,10 +1260,32 @@ document.addEventListener('DOMContentLoaded', () => {
     speak,
 
     /**
+     * Enables point-to-speak hover reading mode.
+     */
+    enableHoverRead,
+
+    /**
+     * Disables point-to-speak hover reading mode.
+     */
+    disableHoverRead,
+
+    /**
+     * Toggles point-to-speak hover reading mode.
+     */
+    toggleHoverRead,
+
+    /**
      * @type {boolean} Whether voice recognition is currently active.
      */
     get isListening() {
       return isListening;
+    },
+
+    /**
+     * @type {boolean} Whether hover-to-read mode is active.
+     */
+    get isHoverReadMode() {
+      return isHoverReadMode;
     },
 
     /**
