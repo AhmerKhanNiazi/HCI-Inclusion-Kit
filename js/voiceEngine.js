@@ -26,8 +26,20 @@ document.addEventListener('DOMContentLoaded', () => {
   /** @type {SpeechRecognition|null} The active recognition instance. */
   let recognition = null;
 
-  /** @type {boolean} Whether continuous listening is currently active. */
+  /** @type {boolean} Whether continuous listening is requested by user. */
   let isListening = false;
+
+  /** @type {boolean} Whether recognition is currently active in the browser. */
+  let isRecognizing = false;
+
+  /** @type {number|null} Timer ID for debounced restart. */
+  let restartTimer = null;
+
+  /** @type {number} Circuit breaker counter for rapid consecutive aborts. */
+  let consecutiveAborts = 0;
+
+  /** @type {boolean} Whether system TTS is currently speaking aloud. */
+  let isSpeakingTTS = false;
 
   /** @type {boolean} Whether the browser supports SpeechRecognition. */
   const isSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
@@ -133,6 +145,18 @@ document.addEventListener('DOMContentLoaded', () => {
     utterance.lang = 'en-US';
     utterance.rate = 1.0;
     utterance.pitch = 1.1;
+
+    utterance.onstart = () => {
+      isSpeakingTTS = true;
+    };
+    utterance.onend = () => {
+      setTimeout(() => {
+        isSpeakingTTS = false;
+      }, 300);
+    };
+    utterance.onerror = () => {
+      isSpeakingTTS = false;
+    };
 
     // Voices may not be loaded yet on first call — retry after voices load.
     const voice = getBestVoice();
@@ -482,6 +506,11 @@ document.addEventListener('DOMContentLoaded', () => {
      * final results are routed through the command parser.
      */
     rec.onresult = (event) => {
+      if (isSpeakingTTS) {
+        // Discard captured sound while the computer's TTS is speaking to prevent feedback loops
+        return;
+      }
+
       let interimTranscript = '';
       let finalTranscript = '';
 
@@ -506,40 +535,72 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * Fired when the recogniser ends unexpectedly (e.g. browser timeout).
-     * Automatically restarts if the user has not manually toggled off.
+     * Fired when the recogniser successfully starts audio capture.
+     */
+    rec.onstart = () => {
+      isRecognizing = true;
+      consecutiveAborts = 0;
+    };
+
+    /**
+     * Fired when the recogniser ends.
+     * Restarts with a backoff delay if continuous listening is desired,
+     * and triggers a circuit breaker if rapid consecutive aborts happen.
      */
     rec.onend = () => {
-      if (isListening) {
-        // Restart automatically to maintain continuous mode.
-        try {
-          rec.start();
-        } catch (e) {
-          // Ignore "already started" errors.
-        }
+      isRecognizing = false;
+      if (!isListening) return;
+
+      // Circuit breaker: If 3 or more consecutive aborts happen, pause cleanly
+      if (consecutiveAborts >= 3) {
+        console.info('[VoiceEngine] Recognition paused after consecutive aborts.');
+        stopListening();
+        ariaAnnounce('Voice recognition paused. Click microphone or press V to restart.');
+        return;
       }
+
+      // Throttled restart with backoff delay (minimum 600ms) to prevent infinite browser loop
+      if (restartTimer) clearTimeout(restartTimer);
+      restartTimer = setTimeout(() => {
+        if (isListening && !isRecognizing) {
+          try {
+            rec.start();
+          } catch (e) {
+            // Ignore InvalidStateError if already active
+          }
+        }
+      }, 600);
     };
 
     /**
      * Fired on recogniser error. Handles common error types gracefully.
      */
     rec.onerror = (event) => {
+      if (event.error === 'aborted') {
+        consecutiveAborts++;
+        // 'aborted' is a standard Web Speech event when speech is interrupted or restarted; do not spam console
+        return;
+      }
+      if (event.error === 'no-speech') {
+        // Harmless browser silence timeout
+        consecutiveAborts = 0;
+        return;
+      }
       if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
         console.warn('[VoiceEngine] Microphone permission denied:', event.error);
         ariaAnnounce('Microphone access denied. Please allow microphone permission.');
         stopListening();
-      } else if (event.error === 'no-speech') {
-        // Harmless — browser timed out waiting; onend will restart.
-      } else {
-        console.warn('[VoiceEngine] Recognition error:', event.error);
+        return;
       }
+      consecutiveAborts++;
+      console.warn('[VoiceEngine] Recognition error:', event.error);
     };
 
     /**
      * Fired when the recogniser begins capturing audio.
      */
     rec.onaudiostart = () => {
-      // No-op — UI is updated by startListening/stopListening.
+      isRecognizing = true;
     };
 
     return rec;
@@ -560,19 +621,27 @@ document.addEventListener('DOMContentLoaded', () => {
       ariaAnnounce('Voice recognition is not supported in this browser.');
       return;
     }
-    if (isListening) return;
+    if (isListening && isRecognizing) return;
+
+    if (restartTimer) {
+      clearTimeout(restartTimer);
+      restartTimer = null;
+    }
+    consecutiveAborts = 0;
+    isListening = true;
+    syncUI();
 
     recognition = recognition || createRecognition();
     if (!recognition) return;
 
     try {
       recognition.start();
-      isListening = true;
-      syncUI();
-      ariaAnnounce('Voice recognition started. Listening for commands.');
     } catch (e) {
-      console.warn('[VoiceEngine] Could not start recognition:', e);
+      if (e.name !== 'InvalidStateError') {
+        console.warn('[VoiceEngine] Could not start recognition:', e);
+      }
     }
+    ariaAnnounce('Voice recognition started. Listening for commands.');
   }
 
   /**
@@ -580,11 +649,18 @@ document.addEventListener('DOMContentLoaded', () => {
    * Updates all UI chrome and announces via ARIA.
    */
   function stopListening() {
-    if (!isListening) return;
+    if (!isListening && !isRecognizing) return;
     isListening = false;
+    isRecognizing = false;
+
+    if (restartTimer) {
+      clearTimeout(restartTimer);
+      restartTimer = null;
+    }
+    consecutiveAborts = 0;
 
     try {
-      recognition?.stop();
+      recognition?.abort();
     } catch (e) {
       // Ignore stop errors.
     }
